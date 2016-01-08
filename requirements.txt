@@ -1,0 +1,13 @@
+pbr>=0.11,<2.0
+
+click
+Flask
+Flask-OAuthlib
+Flask-PyMongo
+iso8601
+pymongo
+python-dateutil
+pytz
+requests
+simplejson
+six

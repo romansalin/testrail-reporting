@@ -9,6 +9,7 @@ Requirements
 
 * Python 2.7
 * MongoDB
+* npm
 
 Installation
 ------------

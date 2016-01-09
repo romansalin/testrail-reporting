@@ -59,7 +59,6 @@ target/
 # Frontend
 node_modules
 npm-debug.log*
-.grunt
 
 # IDEs
 .idea/

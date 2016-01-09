@@ -4,6 +4,7 @@ click
 Flask
 Flask-OAuthlib
 Flask-PyMongo
+Flask-RESTful
 iso8601
 pymongo
 python-dateutil

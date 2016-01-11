@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="middle-box text-center loginscreen animated fadeInDown">
+    <div>
+        <div>
+            <img height="80" width="160"
+                 src="{{ url_for('static', filename='img/mirantis_logo.png') }}"/>
+        </div>
+        <h2 style="font-size: 34px; padding-top: 40px;">TestRail Reporting</h2>
+        <p></p>
+        <form class="m-t" role="form" action="login.html">
+            <div align="center">
+                <a href="{{ url_for('auth.login') }}" id="signinButton" type="submit"></a>
+            </div>
+        </form>
+        <p class="m-t">
+            <small>Use your @mirantis account to sign in</small>
+        </p>
+    </div>
+</div>
+{% endblock %}

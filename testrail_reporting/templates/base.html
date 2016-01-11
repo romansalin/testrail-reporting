@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{% block title %}TestRail Reporting{% endblock %}</title>
+
+    <link href="{{ url_for('static', filename='apple-touch-icon.png') }}" rel="apple-touch-icon">
+    <link href="{{ url_for('static', filename='favicon.ico') }}" rel="shortcut icon">
+
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=PT+Sans:regular,bold&subset=cyrillic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=PT+Sans+Narrow:regular,bold&subset=cyrillic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=PT+Sans+Caption:regular,bold&subset=cyrillic' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+<div id="wrapper">
+    <div id="page-wrapper" class="gray-bg">
+        {% block body %}{% endblock %}
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/bundle.js') }}"></script>
+</body>
+</html>

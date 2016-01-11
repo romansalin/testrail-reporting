@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="middle-box text-center animated fadeInDown">
+    <h1>401</h1>
+    <h3 class="font-bold">Not Authorized</h3>
+
+    <div class="error-desc">
+        <p>Sorry, but you're not authorized to view this page.</p>
+        <p>You can try to <a href="{{ url_for('login.show') }}">login</a></p>
+    </div>
+</div>
+{% endblock %}

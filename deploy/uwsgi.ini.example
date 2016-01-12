@@ -1,0 +1,5 @@
+[uwsgi]
+socket = 127.0.0.1:3031
+chdir = /path/to/my/app
+module = example:app
+env = EXAMPLE_ENV=prod

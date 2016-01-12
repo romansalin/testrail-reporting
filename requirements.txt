@@ -1,16 +1,15 @@
 pbr>=0.11,<2.0
 
-click
 Flask
 Flask-Cache
-Flask-DebugToolbar
+#Flask-DebugToolbar
+flask-mongoengine
 Flask-OAuthlib
 Flask-PyMongo
 Flask-RESTful
 Flask-Script
 Flask-WTF
 iso8601
-pymongo
 python-dateutil
 pytz
 requests

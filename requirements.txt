@@ -8,7 +8,9 @@ flask-mongoengine
 Flask-OAuthlib
 Flask-RESTful
 Flask-Script
+Flask-Security
 Flask-WTF
 iso8601
 pytz
 requests
+six

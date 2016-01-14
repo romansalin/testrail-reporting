@@ -7,7 +7,7 @@ from flask import g
 from flask import session
 import flask_oauthlib.client as oauth_client
 
-from testrail_reporting import db
+from testrail_reporting.auth import models
 
 log = logging.getLogger(__name__)
 auth = flask.Blueprint('auth', __name__)

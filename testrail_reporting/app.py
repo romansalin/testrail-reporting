@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import logging
 import os
 import sys
@@ -9,15 +5,21 @@ from logging import handlers as log_handlers
 
 from flask import Flask
 from flask import render_template
-from flask.ext.mongoengine import MongoEngine
+from flask_debugtoolbar import DebugToolbarExtension
+from flask.ext.cache import Cache
 from flask.ext.restful import Api
+from flask.ext.mongoengine import MongoEngine
 
+from testrail_reporting import config
 from testrail_reporting.auth.views import auth
-from testrail_reporting.views import static_pages
 from testrail_reporting.testrail.views import api_bp
+from testrail_reporting.views import static_pages
 
 log = logging.getLogger(__name__)
 
+toolbar = DebugToolbarExtension()
+cache = Cache()
+api = Api()
 db = MongoEngine()
 
 
@@ -27,16 +29,16 @@ def register_error_handler(app, code, page):
 
 
 def setup_logging(app):
-    formatter = logging.Formatter(
-        '[%(asctime)s] - %(name)s - %(levelname)s - %(message)s')
     if not app.debug:
         handler = log_handlers.RotatingFileHandler(
-            '/var/log/testrail_reporting/testrail_reporting.log',
+            app.config['LOGGING_LOCATION'],
             maxBytes=1024 * 1024 * 100,
             backupCount=20)
     else:
         handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.INFO)
+
+    formatter = logging.Formatter(app.config['LOGGING_FORMAT'])
+    handler.setLevel(app.config['LOGGING_LEVEL'])
     handler.setFormatter(formatter)
     app.logger.addHandler(handler)
 
@@ -44,21 +46,21 @@ def setup_logging(app):
     logging.getLogger('iso8601').setLevel(logging.ERROR)
 
 
-def create_app(config_object, enable_logging=True):
+def create_app(environment):
     app = Flask(__name__)
-    api = Api(app)
 
+    app.config.from_object(config.config[environment])
     config_filename = 'testrail_reporting.conf'
-    app.config.from_object(config_object)
     app.config.from_pyfile('/etc/testrail_reporting/' + config_filename,
                            silent=True)
-    app.config.from_pyfile(os.path.join(os.path.expanduser('~') +
+    app.config.from_pyfile(os.path.join(os.path.expanduser('~'),
                                         config_filename), silent=True)
 
-    if enable_logging:
-        setup_logging(app)
+    setup_logging(app)
 
-    global db
+    toolbar.init_app(app)
+    cache.init_app(app, config=app.config['CACHING'])
+    api.init_app(app)
     db.init_app(app)
 
     app.register_blueprint(static_pages, url_prefix='/')

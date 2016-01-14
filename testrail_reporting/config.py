@@ -7,7 +7,7 @@ class Config(object):
     TESTING = False
 
     # Define the application directory
-    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    PROJECT_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
     # Enable protection agains *Cross-site Request Forgery (CSRF)*
     CSRF_ENABLED = True
@@ -23,15 +23,15 @@ class Config(object):
     LOGGING_LEVEL = logging.INFO
 
     # DB
+    MONGODB_DB = 'testrail_reporting'
     MONGODB_HOST = 'localhost'
     MONGODB_PORT = 27017
-    MONGODB_DB = 'testrail_reporting'
 
     # Caching
     CACHING = {'CACHE_TYPE': 'simple'}
 
     # Google OAuth2
-    GOOGLE_ID = 'FIXME'
+    GOOGLE_KEY = 'FIXME'
     GOOGLE_SECRET = 'FIXME'
 
 
@@ -45,7 +45,6 @@ class DevelopmentConfig(Config):
 
 
 class TestingConfig(Config):
-    DEBUG = True
     TESTING = True
 
 config = {

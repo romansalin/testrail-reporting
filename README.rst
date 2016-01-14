@@ -25,6 +25,9 @@ Production Environment
 Hacking
 -------
 
-To run tests:
+To run tests and linters:
 
-    $ tox -e py27
+.. code-block:: shell
+
+    $ pip install tox
+    $ tox

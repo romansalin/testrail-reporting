@@ -64,4 +64,4 @@ npm-debug.log*
 .idea/
 
 # Project-specific
-config/testrail_reporting.conf
+*.conf

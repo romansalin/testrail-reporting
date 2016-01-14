@@ -27,4 +27,4 @@ Hacking
 
 To run tests:
 
-    $ python setup.py test
+    $ tox -e py27

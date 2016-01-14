@@ -24,7 +24,7 @@ class Config(object):
 
     # DB
     MONGODB_HOST = 'localhost'
-    MONGODB_PORT = '27017'
+    MONGODB_PORT = 27017
     MONGODB_DB = 'testrail_reporting'
 
     # Caching
@@ -45,6 +45,7 @@ class DevelopmentConfig(Config):
 
 
 class TestingConfig(Config):
+    DEBUG = True
     TESTING = True
 
 config = {

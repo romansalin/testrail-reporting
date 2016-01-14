@@ -12,3 +12,4 @@ Flask-WTF
 iso8601
 pytz
 requests
+six

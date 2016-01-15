@@ -3,7 +3,7 @@ import threading
 from flask import current_app
 from flask import session
 
-from testrail_reporting.app import oauth
+from testrail_reporting.extensions import oauth
 
 _GOOGLE = None
 _LOCK = threading.Lock()

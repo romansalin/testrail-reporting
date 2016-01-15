@@ -2,7 +2,7 @@ import unittest
 
 from flask import current_app
 
-from testrail_reporting.app import create_app
+from testrail_reporting import create_app
 
 
 class BasicsTestCase(unittest.TestCase):

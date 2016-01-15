@@ -2,7 +2,7 @@
 from flask.ext.script import Manager
 from flask.ext.script import Server
 
-from testrail_reporting.app import create_app
+from testrail_reporting import create_app
 from testrail_reporting.cmd.sync import Sync
 
 manager = Manager(create_app)

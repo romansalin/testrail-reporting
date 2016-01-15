@@ -5,24 +5,17 @@ from logging import handlers as log_handlers
 
 from flask import Flask
 from flask import render_template
-from flask.ext.cache import Cache
-from flask.ext.debugtoolbar import DebugToolbarExtension
-from flask.ext.mongoengine import MongoEngine
-from flask.ext.oauthlib.client import OAuth
-from flask.ext.restful import Api
 from flask.ext.security import MongoEngineUserDatastore
-from flask.ext.security import Security
 
 from testrail_reporting import config
+from testrail_reporting import extensions as ext
+from testrail_reporting.auth import models as auth_models
+from testrail_reporting.pages.views import pages
+from testrail_reporting.auth.views import auth
+from testrail_reporting.api import api_bp
+
 
 log = logging.getLogger(__name__)
-
-toolbar = DebugToolbarExtension()
-oauth = OAuth()
-cache = Cache()
-api = Api()
-db = MongoEngine()
-security = Security()
 
 
 def configure_app(app, environment):
@@ -60,29 +53,23 @@ def configure_hook(app):
 
 
 def configure_extensions(app):
-    db.init_app(app)
-    cache.init_app(app, config=app.config['CACHING'])
-    oauth.init_app(app)
-    api.init_app(app)
+    ext.db.init_app(app)
+    ext.cache.init_app(app, config=app.config['CACHING'])
+    ext.oauth.init_app(app)
+    ext.api.init_app(app)
 
     # Setup Flask-Security
-    from testrail_reporting.auth import models as auth_models
-    user_datastore = MongoEngineUserDatastore(db, auth_models.User,
+    user_datastore = MongoEngineUserDatastore(ext.db, auth_models.User,
                                               auth_models.Role)
-    security.init_app(app, user_datastore)
+    ext.security.init_app(app, user_datastore)
 
     if app.debug:
-        toolbar.init_app(app)
+        ext.toolbar.init_app(app)
 
 
 def configure_blueprints(app):
-    from testrail_reporting.pages.views import pages
     app.register_blueprint(pages, url_prefix='/')
-
-    from testrail_reporting.auth.views import auth
     app.register_blueprint(auth, url_prefix='/auth')
-
-    from testrail_reporting.api import api_bp
     app.register_blueprint(api_bp, url_prefix='/api/v1.0')
 
 

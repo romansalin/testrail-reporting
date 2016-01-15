@@ -9,6 +9,11 @@ from flask.ext.security import MongoEngineUserDatastore
 
 from testrail_reporting import config
 from testrail_reporting import extensions as ext
+from testrail_reporting.auth import models as auth_models
+from testrail_reporting.pages.views import pages
+from testrail_reporting.auth.views import auth
+from testrail_reporting.api import api_bp
+
 
 log = logging.getLogger(__name__)
 
@@ -54,7 +59,6 @@ def configure_extensions(app):
     ext.api.init_app(app)
 
     # Setup Flask-Security
-    from testrail_reporting.auth import models as auth_models
     user_datastore = MongoEngineUserDatastore(ext.db, auth_models.User,
                                               auth_models.Role)
     ext.security.init_app(app, user_datastore)
@@ -64,13 +68,8 @@ def configure_extensions(app):
 
 
 def configure_blueprints(app):
-    from testrail_reporting.pages.views import pages
     app.register_blueprint(pages, url_prefix='/')
-
-    from testrail_reporting.auth.views import auth
     app.register_blueprint(auth, url_prefix='/auth')
-
-    from testrail_reporting.api import api_bp
     app.register_blueprint(api_bp, url_prefix='/api/v1.0')
 
 

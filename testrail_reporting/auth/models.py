@@ -3,7 +3,7 @@ import logging
 from flask.ext.security import RoleMixin
 from flask.ext.security import UserMixin
 
-from testrail_reporting.app import db
+from testrail_reporting.extensions import db
 
 log = logging.getLogger(__name__)
 

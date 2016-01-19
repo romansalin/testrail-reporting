@@ -8,7 +8,7 @@ module.exports = {
   output: {
     path: assetsPath,
     //filename: '[name]-[hash].js',
-    //chunkFilename: '[name]-[chunkhash].js',
+    //chunkFilename: '[name]-[chunkhash].js'
     filename: 'bundle.js'
   },
   resolve: {
@@ -16,13 +16,13 @@ module.exports = {
   },
   module: {
     loaders: [
-      { test: /\.json$/, loader: 'json-loader' },
+      {test: /\.json$/, loader: 'json-loader'},
       {test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader'},
       {test: /\.css$/, exclude: /node_modules/, loader: 'style!css'},
       {test: /\.less$/, exclude: /node_modules/, loader: 'style!css!less'},
       {test: /\.(png|jpg|gif)$/, loader: 'url-loader?limit=10000'},
-      { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?limit=10000&mimetype=application/font-woff" },
-      { test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader" }
+      {test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: 'url-loader?limit=10000&mimetype=application/font-woff'},
+      {test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: 'file-loader'}
     ]
   }
 };

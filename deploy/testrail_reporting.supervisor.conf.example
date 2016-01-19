@@ -1,5 +1,0 @@
-[program:example]
-command=/usr/local/bin/uwsgi --ini /etc/uwsgi.ini
-autostart=true
-autorestart=true
-stopsignal=INT

@@ -1,0 +1,13 @@
+[Unit]
+Description=uWSGI instance to serve testrail-reporting
+After=network.target
+
+[Service]
+User=user
+Group=nginx
+WorkingDirectory=/home/user/testrail-reporting
+Environment="PATH=/home/user/.virtualenvs/testrail-reporting/bin"
+ExecStart=/home/user/.virtualenvs/testrail-reporting/bin/uwsgi --ini testrail_reporting.ini
+
+[Install]
+WantedBy=multi-user.target

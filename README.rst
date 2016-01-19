@@ -24,7 +24,7 @@ Development Environment
     $ pip install -r requirements.txt
     $ npm install
     $ npm run build
-    $ cp etc/testrail_reporting.conf.example ~/testrail_reporting.conf  # setup Google OAuth and TestRail credentials
+    $ cp etc/testrail_reporting.conf.example ~/testrail_reporting.conf  # Google OAuth and TestRail credentials
     $ python manage.py sync
     $ python manage.py runserver
 

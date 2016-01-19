@@ -1,20 +1,15 @@
 server {
     listen 80;
-    server_name example.com;
-    root /path/to/my/app/example/static;
-
-    client_max_body_size 4G;
+    server_name _;
+    root /home/roman.salin/projects/testrail-reporting/testrail_reporting/static;
+    client_max_body_size 1G;
     keepalive_timeout 5;
 
-    access_log  /srv/testrail_reporting/logs/nginx-access.log;
-    error_log   /srv/testrail_reporting/logs/nginx-error.log;
+    access_log  /var/log/nginx/testrail-reporting-access.log;
+    error_log   /var/log/nginx/testrail-reporting-error.log;
 
     location / {
-        try_files $uri @uwsgi;
-    }
-
-    location @uwsgi {
-            include uwsgi_params;
-            uwsgi_pass 127.0.0.1:3031;
+        include uwsgi_params;
+        uwsgi_pass unix:/home/user/testrail-reporting/testrail_reporting.sock;
     }
 }

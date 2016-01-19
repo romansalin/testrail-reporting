@@ -30,7 +30,9 @@ def _generate_xlsx(filename):
         worksheet = workbook.add_worksheet(obj.__name__)
         for record in obj.objects:
             col = 0
-            for k, v in record.to_mongo().items():
+            record_items = sorted(record.to_mongo().items(),
+                                  key=lambda e: e[0])
+            for k, v in record_items:
                 # TODO(rsalin): auto column width
                 # width = _calc_column_width(col, v)
                 # worksheet.set_column(width)

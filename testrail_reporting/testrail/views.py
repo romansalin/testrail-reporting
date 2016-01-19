@@ -1,4 +1,5 @@
 import cStringIO
+import json
 
 from flask import Blueprint
 from flask import Response
@@ -12,23 +13,40 @@ from testrail_reporting.testrail.models import (
 testrail = Blueprint('testrail', __name__)
 
 
+def _calc_column_width(col, val):
+    return '{0}:{0}'.format(chr(col + ord('A')), len(str(val)) + 2)
+
+
 def _generate_xlsx(filename):
-    workbook = xlsxwriter.Workbook(filename)
-
-    worksheet_users = workbook.add_worksheet('Users')
-    for user in Users.objects:
-        worksheet_users.write('A1', 'Hello world')
-
-    worksheet_case_types = workbook.add_worksheet('Case Types')
-
-    worksheet_statuses = workbook.add_worksheet('Statuses')
-
-    worksheet_priorities = workbook.add_worksheet('Priorities')
-
-    workbook.close()
+    objects = [Users, CaseTypes, Statuses, Priorities, Projects, Milestones,
+               Plans, Configs, Suites, Cases, Sections, Runs, Tests, Results]
 
     str_io = cStringIO.StringIO()
+    workbook = xlsxwriter.Workbook(str_io)
+    bold = workbook.add_format({'bold': True})
 
+    for obj in objects:
+        row = 1
+        worksheet = workbook.add_worksheet(obj.__name__)
+        for record in obj.objects:
+            col = 0
+            for k, v in record.to_mongo().items():
+                # TODO(rsalin): auto column width
+                # width = _calc_column_width(col, v)
+                # worksheet.set_column(width)
+
+                if row == 1:
+                    worksheet.write(0, col, k, bold)
+
+                # Remove?
+                if isinstance(v, list):
+                    v = json.dumps(v)
+
+                worksheet.write(row, col, v)
+                col += 1
+            row += 1
+
+    workbook.close()
     return str_io.getvalue()
 
 

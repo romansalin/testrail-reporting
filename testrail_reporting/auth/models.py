@@ -13,7 +13,7 @@ class Role(db.Document, RoleMixin):
     description = db.StringField(max_length=255)
 
 
-class User(db.DynamicDocument,  UserMixin):
+class User(db.DynamicDocument, UserMixin):
     email = db.StringField(max_length=255)
     password = db.StringField(max_length=255)
     active = db.BooleanField(default=True)

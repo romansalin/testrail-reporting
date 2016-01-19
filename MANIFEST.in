@@ -1,2 +1,3 @@
 recursive-include testrail_reporting/templates *
 recursive-include testrail_reporting/static *
+recursive-include *.py

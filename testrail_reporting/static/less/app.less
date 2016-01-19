@@ -1,8 +1,15 @@
 @import "~bootstrap-less/bootstrap/bootstrap.less";
 @import "~bootstrap-material-design/less/bootstrap-material-design.less";
+@import "~bootstrap-material-design/less/ripples.less";
+
+html {
+  position: relative;
+  min-height: 100%;
+}
 
 body {
-  padding-top: 20px;
+  /* Margin bottom by footer height */
+  margin-bottom: 50px;
 }
 
 a#signinButton {
@@ -18,4 +25,12 @@ a#signinButton {
   &:active {
     background: url(../img/signin_press.png) no-repeat 0 0;
   }
+}
+
+.footer {
+  text-align: center;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 50px;
 }

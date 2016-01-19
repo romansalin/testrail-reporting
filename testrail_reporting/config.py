@@ -34,6 +34,11 @@ class Config(object):
     GOOGLE_KEY = 'FIXME'
     GOOGLE_SECRET = 'FIXME'
 
+    # TestRail
+    TESTRAIL_BASEURL = 'FIXME'
+    TESTRAIL_USER = 'FIXME'
+    TESTRAIL_PASSWORD = 'FIXME'
+
 
 class ProductionConfig(Config):
     LOGGING_LOCATION = '/var/log/testrail_reporting/testrail_reporting.log'

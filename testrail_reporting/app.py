@@ -11,6 +11,7 @@ from testrail_reporting import config
 from testrail_reporting import extensions as ext
 from testrail_reporting.auth import models as auth_models
 from testrail_reporting.pages.views import pages
+from testrail_reporting.testrail.views import testrail
 from testrail_reporting.auth.views import auth
 from testrail_reporting.api import api_bp
 
@@ -18,8 +19,8 @@ from testrail_reporting.api import api_bp
 log = logging.getLogger(__name__)
 
 
-def configure_app(app, environment):
-    app.config.from_object(config.config[environment])
+def configure_app(app, config_name):
+    app.config.from_object(config.config[config_name])
     config_filename = 'testrail_reporting.conf'
     app.config.from_pyfile('/etc/testrail_reporting/' + config_filename,
                            silent=True)
@@ -70,6 +71,7 @@ def configure_extensions(app):
 def configure_blueprints(app):
     app.register_blueprint(pages, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/auth')
+    app.register_blueprint(testrail, url_prefix='/testrail')
     app.register_blueprint(api_bp, url_prefix='/api/v1.0')
 
 
@@ -94,10 +96,10 @@ def configure_api_endpoints():
     pass
 
 
-def create_app(environment='development'):
+def create_app(config_name='development'):
     app = Flask(__name__)
 
-    configure_app(app, environment)
+    configure_app(app, config_name)
     configure_logging(app)
     configure_hook(app)
     configure_extensions(app)

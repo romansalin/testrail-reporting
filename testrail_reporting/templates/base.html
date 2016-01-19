@@ -9,20 +9,22 @@
     <link href="{{ url_for('static', filename='apple-touch-icon.png') }}" rel="apple-touch-icon">
     <link href="{{ url_for('static', filename='favicon.ico') }}" rel="shortcut icon">
 
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' rel='stylesheet' type='text/css'>
-    <link href='https://fonts.googleapis.com/css?family=PT+Sans:regular,bold&subset=cyrillic' rel='stylesheet' type='text/css'>
-    <link href='https://fonts.googleapis.com/css?family=PT+Sans+Narrow:regular,bold&subset=cyrillic' rel='stylesheet' type='text/css'>
-    <link href='https://fonts.googleapis.com/css?family=PT+Sans+Caption:regular,bold&subset=cyrillic' rel='stylesheet' type='text/css'>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
+
 <div id="wrapper">
-    <div id="page-wrapper" class="gray-bg">
-        {% block body %}{% endblock %}
+    {% block header %}{% endblock %}
+
+    <div class="container">
+        {% block content %}{% endblock %}
     </div>
+
+    {% block footer %}{% endblock %}
 </div>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 <script src="{{ url_for('static', filename='js/build/bundle.js') }}"></script>
 </body>
 </html>

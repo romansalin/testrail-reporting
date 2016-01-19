@@ -2,6 +2,7 @@ var path = require('path');
 var webpack = require('webpack');
 var assetsPath = path.join(__dirname, 'testrail_reporting/static/js/build');
 
+// TODO(rsalin): development and production mode
 module.exports = {
   debug: true,
   entry: path.join(__dirname, 'testrail_reporting/static/js/app.js'),

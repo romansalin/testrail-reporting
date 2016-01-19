@@ -29,7 +29,7 @@ class Plans(db.DynamicDocument):
     id = db.IntField(primary_key=True)
 
 
-class Configurations(db.DynamicDocument):
+class Configs(db.DynamicDocument):
     id = db.IntField(primary_key=True)
 
 

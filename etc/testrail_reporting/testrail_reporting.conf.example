@@ -1,6 +1,8 @@
+# Google OAuth Credentials
 GOOGLE_KEY = ''
 GOOGLE_SECRET = ''
 
+# Testrail Credentials
 TESTRAIL_BASEURL = ''
 TESTRAIL_USER = ''
 TESTRAIL_PASSWORD = ''

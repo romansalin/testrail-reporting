@@ -4,9 +4,10 @@ from flask.ext.script import Command
 from testrail_reporting.testrail import testrail_client
 from testrail_reporting.testrail.models import (
     Users, Projects, Milestones, Plans, Suites, Runs, Sections, Cases, Tests,
-    Results, CaseTypes, Statuses, Priorities, Configurations)
+    Results, CaseTypes, Statuses, Priorities, Configs)
 
 
+# TODO(rsalin): multithreading, too slow!
 class Sync(Command):
     def __init__(self):
         super(Sync, self).__init__()
@@ -64,10 +65,9 @@ class Sync(Command):
                 p = Plans(**plan)
                 p.save()
 
-            configurations = self.get_data('configurations/{0}'.format(
-                project['id']))
-            for configuration in configurations:
-                cfg = Configurations(**configuration)
+            configs = self.get_data('configs/{0}'.format(project['id']))
+            for config in configs:
+                cfg = Configs(**config)
                 cfg.save()
 
             suites = self.get_data('suites/{0}'.format(project['id']))

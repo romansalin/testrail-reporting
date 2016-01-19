@@ -14,3 +14,4 @@ iso8601
 pytz
 requests
 six
+XlsxWriter

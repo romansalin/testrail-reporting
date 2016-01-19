@@ -5,7 +5,7 @@ import { Router, Route, Link, DefaultRoute, Routes, NotFoundRoute } from 'react-
 import '../less/app.less';
 
 import 'bootstrap-less/js/bootstrap.min';
-import 'moment/min/moment.min.js';
+import 'moment/min/moment.min';
 import 'bootstrap-material-design/dist/js/material.min';
 import 'bootstrap-material-design/dist/js/ripples.min';
 

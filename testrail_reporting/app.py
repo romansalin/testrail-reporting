@@ -11,6 +11,7 @@ from testrail_reporting import config
 from testrail_reporting import extensions as ext
 from testrail_reporting.auth import models as auth_models
 from testrail_reporting.pages.views import pages
+from testrail_reporting.testrail.views import testrail
 from testrail_reporting.auth.views import auth
 from testrail_reporting.api import api_bp
 
@@ -70,6 +71,7 @@ def configure_extensions(app):
 def configure_blueprints(app):
     app.register_blueprint(pages, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/auth')
+    app.register_blueprint(testrail, url_prefix='/testrail')
     app.register_blueprint(api_bp, url_prefix='/api/v1.0')
 
 

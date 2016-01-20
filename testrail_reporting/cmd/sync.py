@@ -10,6 +10,8 @@ from testrail_reporting.utils import timestamp_to_utc_date
 
 
 # TODO(rsalin): multithreading, too slow!
+# TODO(rsalin): select from last data changes
+# TODO(rsalin): clean non-existent data
 class Sync(Command):
     def __init__(self):
         super(Sync, self).__init__()

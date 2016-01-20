@@ -13,35 +13,56 @@ from testrail_reporting.testrail.models import (
 testrail = Blueprint('testrail', __name__)
 
 
-def _calc_column_width(col, val):
-    return '{0}:{0}'.format(chr(col + ord('A')), len(str(val)) + 2)
+def _calc_column_width(val):
+    length = 6
+    if isinstance(val, int):
+        length += len(str(val))
+    elif isinstance(val, basestring):
+        length += len(val.encode('ascii', 'ignore'))
+    return length
 
 
-def _generate_xlsx(filename):
-    objects = [Users, CaseTypes, Statuses, Priorities, Projects, Milestones,
-               Plans, Configs, Suites, Cases, Sections, Runs, Tests, Results]
+def _get_xlsx_columns(document):
+    data = document.to_mongo()
+    fields = document.xlsx_fields
+
+    for key in data:
+        if key != '_id' and key not in fields:
+            del data[key]
+
+    for field in fields:
+        if field not in data:
+            data[field] = None
+
+    return sorted(data.items(), key=lambda e: e[0])
+
+
+def _generate_xlsx():
+    collections = [Users, CaseTypes, Statuses, Priorities, Projects,
+                   Milestones, Plans, Configs, Suites, Cases, Sections, Runs,
+                   Tests, Results]
 
     str_io = cStringIO.StringIO()
     workbook = xlsxwriter.Workbook(str_io)
     bold = workbook.add_format({'bold': True})
 
-    for obj in objects:
+    for collection in collections:
         row = 1
-        worksheet = workbook.add_worksheet(obj.__name__)
-        for record in obj.objects:
+        worksheet = workbook.add_worksheet(collection.__name__)
+        for document in collection.objects:
             col = 0
-            record_items = sorted(record.to_mongo().items(),
-                                  key=lambda e: e[0])
-            for k, v in record_items:
-                width = _calc_column_width(col, v)
-                worksheet.set_column(width)
+            data = _get_xlsx_columns(document)
+            for k, v in data:
+                width = _calc_column_width(v)
 
                 if row == 1:
+                    worksheet.set_column(0, 0, width=width)
                     worksheet.write(0, col, k, bold)
 
                 if isinstance(v, list):
                     v = json.dumps(v)
 
+                worksheet.set_column(col, col, width=width)
                 worksheet.write(row, col, v)
                 col += 1
             row += 1
@@ -54,7 +75,7 @@ def _generate_xlsx(filename):
 # @auth_required
 def index():
     filename = 'testrail.xlsx'
-    xlsx = _generate_xlsx(filename)
+    xlsx = _generate_xlsx()
     return Response(xlsx,
                     mimetype='application/vnd.openxmlformats-officedocument.'
                              'spreadsheetml.sheet',

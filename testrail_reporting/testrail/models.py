@@ -1,158 +1,241 @@
 from testrail_reporting.extensions import db
 
 
-class Projects(db.Document):
+class TestRailBaseDocument(db.DynamicDocument):
     id = db.IntField(primary_key=True)
+
+    meta = {
+        'abstract': True,
+    }
+
+
+class Users(TestRailBaseDocument):
+    xlsx_fields = [
+        'email',
+        'is_active',
+        'name',
+    ]
+
+    email = db.StringField()
+    is_active = db.BooleanField()
+    name = db.StringField()
+
+
+class CaseTypes(TestRailBaseDocument):
+    xlsx_fields = [
+        'is_default',
+        'name',
+    ]
+
+    is_default = db.BooleanField()
+    name = db.StringField()
+
+
+class Priorities(TestRailBaseDocument):
+    xlsx_fields = [
+        'is_default',
+        'name',
+        'priority',
+        'short_name',
+    ]
+
+    is_default = db.BooleanField()
+    name = db.StringField()
+    priority = db.IntField()
+    short_name = db.StringField()
+
+
+class Statuses(TestRailBaseDocument):
+    xlsx_fields = [
+        'is_final',
+        'is_system',
+        'is_untested',
+        'label',
+        'name',
+    ]
+
+    is_final = db.BooleanField()
+    is_system = db.BooleanField()
+    is_untested = db.BooleanField()
+    label = db.StringField()
+    name = db.StringField()
+
+
+class Projects(TestRailBaseDocument):
+    xlsx_fields = [
+        'announcement',
+        'completed_on',
+        'is_completed',
+        'name',
+        'show_announcement',
+        'suite_mode',
+        'url',
+    ]
+
     announcement = db.StringField()
+    completed_on = db.DateTimeField()
     is_completed = db.BooleanField()
-    completed_on = db.StringField(),
     name = db.StringField()
     show_announcement = db.IntField()
     suite_mode = db.IntField()
     url = db.StringField()
 
 
-class Users(db.DynamicDocument):
-    id = db.IntField(primary_key=True)
+class Milestones(TestRailBaseDocument):
+    xlsx_fields = [
+        'completed_on',
+        'description',
+        'due_on',
+        'is_completed',
+        'name',
+        'project_id',
+        'url',
+    ]
 
-
-class CaseTypes(db.DynamicDocument):
-    id = db.IntField(primary_key=True)
-
-
-class Priorities(db.DynamicDocument):
-    id = db.IntField(primary_key=True)
-
-
-class Statuses(db.DynamicDocument):
-    id = db.IntField(primary_key=True)
-
-
-class Milestones(db.Document):
-    id = db.IntField(primary_key=True)
+    completed_on = db.DateTimeField()
     description = db.StringField()
+    due_on = db.DateTimeField()
     is_completed = db.BooleanField()
-    completed_on = db.StringField()
-    name = db.StringField()
-    project_id = db.IntField()
-    url = db.StringField()
-    due_on = db.IntField()
-
-
-class Plans(db.Document):
-    # entries?
-    id = db.IntField(primary_key=True)
-    assignedto_id = db.IntField()
-    blocked_count = db.IntField()
-    completed_on = db.IntField()
-    created_by = db.IntField()
-    created_on = db.IntField()
-    custom_status1_count = db.IntField()
-    custom_status2_count = db.IntField()
-    custom_status3_count = db.IntField()
-    custom_status4_count = db.IntField()
-    custom_status5_count = db.IntField()
-    custom_status6_count = db.IntField()
-    custom_status7_count = db.IntField()
-    description = db.StringField()
-    failed_count = db.IntField()
-    is_completed = db.BooleanField()
-    milestone_id = db.IntField()
-    name = db.StringField()
-    passed_count = db.IntField()
-    project_id = db.IntField()
-    retest_count = db.IntField()
-    untested_count = db.IntField()
-    url = db.StringField()
-
-
-class Configs(db.DynamicDocument):
-    id = db.IntField(primary_key=True)
-
-
-class Suites(db.Document):
-    id = db.IntField(primary_key=True)
-    is_baseline = db.BooleanField()
-    is_completed = db.BooleanField()
-    is_master = db.BooleanField()
     name = db.StringField()
     project_id = db.IntField()
     url = db.StringField()
 
 
-class Sections(db.Document):
-    id = db.IntField(primary_key=True)
-    depth
-    display_order
-    name
-    suite_id
+class Plans(TestRailBaseDocument):
+    xlsx_fields = [
+        'assignedto_id',
+        'blocked_count',
+        'completed_on',
+        'created_by',
+        'created_on',
+        # TODO make it dynamic (regexp?)
+        'custom_status1_count',
+        'custom_status2_count',
+        'custom_status3_count',
+        'custom_status4_count',
+        'custom_status5_count',
+        'custom_status6_count',
+        'custom_status7_count',
+        'description',
+        'failed_count',
+        'is_completed',
+        'milestone_id',
+        'name',
+        'passed_count',
+        'project_id',
+        'retest_count',
+        'untested_count',
+        'url',
+    ]
 
 
-class Cases(db.Document):
-    id = db.IntField(primary_key=True)
-    created_by = db.IntField()
-    created_on = db.IntField()
-    custom_test_case_description = db.StringField()
-    custom_test_case_steps = db.StringField()
-    custom_test_group = db.StringField()
-    estimate = db.StringField()
-    estimate_forecast = db.StringField()
-    milestone_id = db.IntField()
-    priority_id = db.IntField()
-    section_id = db.IntField()
-    suite_id = db.IntField()
-    title = db.StringField()
-    type_id = db.IntField()
-    updated_by = db.IntField()
-    updated_on = db.IntField()
+class Configs(TestRailBaseDocument):
+    xlsx_fields = [
+        'configs',
+        'name',
+        'project_id',
+    ]
 
 
-class Runs(db.Document):
-    id = db.IntField(primary_key=True)
-    blocked_count
-    config_ids
-    created_by
-    created_on
-    custom_status1_count
-    custom_status2_count
-    custom_status3_count
-    custom_status4_count
-    custom_status5_count
-    custom_status6_count
-    custom_status7_count
-    failed_count
-    include_all
-    is_completed
-    name
-    passed_count
-    project_id
-    retest_count
-    suite_id
-    untested_count
-    url
+class Suites(TestRailBaseDocument):
+    xlsx_fields = [
+        'completed_on',
+        'description',
+        'is_baseline',
+        'is_completed',
+        'is_master',
+        'name',
+        'project_id',
+        'url',
+    ]
 
 
-class Tests(db.Document):
-    id = db.IntField(primary_key=True)
-    case_id
-    custom_case_complexity
-    custom_qa_team
-    custom_test_case_description
-    custom_test_case_steps
-    milestone_id
-    priority_id
-    run_id
-    status_id
-    title
-    type_id
+class Sections(TestRailBaseDocument):
+    xlsx_fields = [
+        'depth',
+        'description',
+        'display_order',
+        'parent_id',
+        'name',
+        'suite_id',
+    ]
 
 
-class Results(db.Document):
-    id = db.IntField(primary_key=True)
-    created_by
-    created_on
-    custom_stdev
-    custom_test_case_steps_results
-    custom_throughput
-    status_id
-    test_id
+class Cases(TestRailBaseDocument):
+    xlsx_fields = [
+        'created_by',
+        'created_on',
+        'estimate',
+        'estimate_forecast',
+        'milestone_id',
+        'priority_id',
+        'refs',
+        'section_id',
+        'suite_id',
+        'title',
+        'type_id',
+        'updated_by',
+        'updated_on',
+    ]
+
+
+class Runs(TestRailBaseDocument):
+    xlsx_fields = [
+        'assignedto_id',
+        'blocked_count',
+        'completed_on',
+        'config',
+        'config_ids',
+        'created_by',
+        'created_on',
+        'custom_status1_count',
+        'custom_status2_count',
+        'custom_status3_count',
+        'custom_status4_count',
+        'custom_status5_count',
+        'custom_status6_count',
+        'custom_status7_count',
+        'description',
+        'failed_count',
+        'include_all',
+        'is_completed',
+        'milestone_id',
+        'plan_id',
+        'name',
+        'passed_count',
+        'project_id',
+        'retest_count',
+        'suite_id',
+        'untested_count',
+        'url',
+    ]
+
+
+class Tests(TestRailBaseDocument):
+    xlsx_fields = [
+        'assignedto_id',
+        'case_id',
+        'estimate',
+        'estimate_forecast',
+        'milestone_id',
+        'priority_id',
+        'refs',
+        'run_id',
+        'status_id',
+        'title',
+        'type_id',
+    ]
+
+
+class Results(TestRailBaseDocument):
+    xlsx_fields = [
+        'assignedto_id',
+        'comment',
+        'created_by',
+        'created_on',
+        'defects',
+        'elapsed',
+        'status_id',
+        'test_id',
+        'version',
+    ]

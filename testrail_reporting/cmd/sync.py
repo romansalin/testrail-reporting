@@ -6,8 +6,12 @@ from testrail_reporting.testrail.models import (
     Users, Projects, Milestones, Plans, Suites, Runs, Sections, Cases, Tests,
     Results, CaseTypes, Statuses, Priorities, Configs)
 
+from testrail_reporting.utils import timestamp_to_utc_date
+
 
 # TODO(rsalin): multithreading, too slow!
+# TODO(rsalin): select from last data changes
+# TODO(rsalin): clean non-existent data
 class Sync(Command):
     def __init__(self):
         super(Sync, self).__init__()
@@ -52,16 +56,29 @@ class Sync(Command):
         projects = self.get_data('projects')
         for project in projects:
             app.logger.info('Sync project "{0}"'.format(project.get('name')))
+
+            project['completed_on'] = timestamp_to_utc_date(
+                project['completed_on'])
+
             p = Projects(**project)
             p.save()
 
             milestones = self.get_data('milestones/{0}'.format(project['id']))
             for milestone in milestones:
+                milestone['completed_on'] = timestamp_to_utc_date(
+                    project['completed_on'])
+                milestone['due_on'] = timestamp_to_utc_date(
+                    milestone['due_on'])
+
                 m = Milestones(**milestone)
                 m.save()
 
             plans = self.get_data('plans/{0}'.format(project['id']))
             for plan in plans:
+                plan['completed_on'] = timestamp_to_utc_date(
+                    plan['completed_on'])
+                plan['created_on'] = timestamp_to_utc_date(plan['created_on'])
+
                 p = Plans(**plan)
                 p.save()
 
@@ -73,12 +90,21 @@ class Sync(Command):
             suites = self.get_data('suites/{0}'.format(project['id']))
             for suite in suites:
                 app.logger.info('Sync suite "{0}"'.format(suite.get('name')))
+
+                suite['completed_on'] = timestamp_to_utc_date(
+                    suite['completed_on'])
+
                 s = Suites(**suite)
                 s.save()
 
                 cases = self.get_data('cases/{0}&suite_id={1}'.format(
                     project['id'], suite['id']))
                 for case in cases:
+                    case['created_on'] = timestamp_to_utc_date(
+                        case['created_on'])
+                    case['updated_on'] = timestamp_to_utc_date(
+                        case['updated_on'])
+
                     c = Cases(**case)
                     c.save()
 
@@ -91,6 +117,11 @@ class Sync(Command):
             runs = self.get_data('runs/{0}'.format(project['id']))
             for run in runs:
                 app.logger.info('Sync run "{0}"'.format(run.get('name')))
+
+                run['completed_on'] = timestamp_to_utc_date(
+                    run['completed_on'])
+                run['created_on'] = timestamp_to_utc_date(run['created_on'])
+
                 r = Runs(**run)
                 r.save()
 
@@ -101,6 +132,9 @@ class Sync(Command):
 
                     results = self.get_data('results/{0}'.format(test['id']))
                     for result in results:
+                        result['created_on'] = timestamp_to_utc_date(
+                            result['created_on'])
+
                         r = Results(**result)
                         r.save()
 

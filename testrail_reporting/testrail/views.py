@@ -33,14 +33,12 @@ def _generate_xlsx(filename):
             record_items = sorted(record.to_mongo().items(),
                                   key=lambda e: e[0])
             for k, v in record_items:
-                # TODO(rsalin): auto column width
-                # width = _calc_column_width(col, v)
-                # worksheet.set_column(width)
+                width = _calc_column_width(col, v)
+                worksheet.set_column(width)
 
                 if row == 1:
                     worksheet.write(0, col, k, bold)
 
-                # Remove?
                 if isinstance(v, list):
                     v = json.dumps(v)
 

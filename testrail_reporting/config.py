@@ -13,10 +13,10 @@ class Config(object):
     CSRF_ENABLED = True
 
     # Use a secure, unique and absolutely secret key for signing the data.
-    CSRF_SESSION_KEY = 'hard to guess string'
+    CSRF_SESSION_KEY = '<hard to guess string>'
 
     # Secret key for signing cookies
-    SECRET_KEY = 'hard to guess string'
+    SECRET_KEY = '<hard to guess string>'
 
     # Logging
     LOGGING_FORMAT = '[%(asctime)s] - %(name)s - %(levelname)s - %(message)s'

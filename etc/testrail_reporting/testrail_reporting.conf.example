@@ -2,7 +2,7 @@
 GOOGLE_KEY = ''
 GOOGLE_SECRET = ''
 
-# Testrail Credentials
+# TestRail Credentials
 TESTRAIL_BASEURL = ''
 TESTRAIL_USER = ''
 TESTRAIL_PASSWORD = ''

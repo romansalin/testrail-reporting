@@ -64,4 +64,3 @@ npm-debug.log*
 .idea/
 
 # Project-specific
-*.conf

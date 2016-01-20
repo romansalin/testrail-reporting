@@ -67,7 +67,7 @@ class MainReport(object):
             if k == 'milestone_id':
                 additional_fields.update({'milestone': self.milestones.get(v)})
             if k == 'assignedto_id':
-                additional_fields.update({'assigned_to': self.users.get(v)})
+                additional_fields.update({'assignedto': self.users.get(v)})
             if k == 'suite_id':
                 additional_fields.update({'suite': self.suites.get(v)})
             if k == 'priority_id':

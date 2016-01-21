@@ -16,6 +16,8 @@ chown-socket = roman.salin:nginx
 chmod-socket = 660
 vacuum = true
 
+harakiri = 300
+socket-timeout = 300
 die-on-term = true
 
-logto = /var/log/testrail_reporting/testrail_reporting.log
+logto = /var/log/testrail_reporting/uwsgi.log

@@ -12,5 +12,7 @@ server {
     location / {
         include uwsgi_params;
         uwsgi_pass unix:/run/testrail_reporting/testrail_reporting.sock;
+        uwsgi_read_timeout 300;
+        uwsgi_send_timeout 300;
     }
 }

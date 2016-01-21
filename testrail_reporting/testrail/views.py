@@ -8,10 +8,10 @@ from testrail_reporting.testrail import reports
 testrail = Blueprint('testrail', __name__)
 
 
-@testrail.route('/download-vghe32yfta98mwtv8oviyd3nqbfeq6dh')
+@testrail.route('/reports/all')
 # @auth_required
 def index():
-    filename = 'testrail.xlsx'
+    filename = 'testrail-report.xlsx'
     report = reports.MainReport()
     xlsx = report.generate_xlsx()
     return Response(xlsx,

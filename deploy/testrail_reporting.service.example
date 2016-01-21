@@ -6,8 +6,8 @@ After=network.target
 User=user
 Group=nginx
 WorkingDirectory=/home/user/testrail-reporting
-Environment="PATH=/home/user/.virtualenvs/testrail-reporting/bin"
-ExecStart=/home/user/.virtualenvs/testrail-reporting/bin/uwsgi --ini testrail_reporting.ini
+Environment="PATH=/home/user/testrail-reporting/env/bin"
+ExecStart=/home/user/testrail-reporting/env/bin/uwsgi --ini testrail_reporting.ini
 
 [Install]
 WantedBy=multi-user.target

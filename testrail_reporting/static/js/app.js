@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from 'react-dom';
+import ReactDOM from 'react-dom';
 import { Router, Route, Link, DefaultRoute, Routes, NotFoundRoute } from 'react-router';
 
 import '../less/app.less';
@@ -11,4 +11,4 @@ import 'bootstrap-material-design/dist/js/ripples.min';
 
 import TestRail from './components/TestRail';
 
-render(<TestRail />, document.getElementById('testrail'));
+ReactDOM.render(<TestRail />, document.getElementById('testrail'));

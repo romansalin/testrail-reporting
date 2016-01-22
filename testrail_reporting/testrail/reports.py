@@ -81,7 +81,7 @@ class MainReport(object):
 
         for field in fields:
             if field not in data:
-                data[field] = ''
+                data[field] = None
 
         return OrderedDict(data)
 

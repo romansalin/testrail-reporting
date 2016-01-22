@@ -4,11 +4,14 @@ import { Router, Route, Link, DefaultRoute, Routes, NotFoundRoute } from 'react-
 
 import '../less/app.less';
 
+// TODO(rsalin): import jquery here
 import 'bootstrap-less/js/bootstrap.min';
 import 'moment/min/moment.min';
 import 'bootstrap-material-design/dist/js/material.min';
 import 'bootstrap-material-design/dist/js/ripples.min';
 
 import TestRail from './components/TestRail';
+
+$.material.init();
 
 ReactDOM.render(<TestRail />, document.getElementById('testrail'));

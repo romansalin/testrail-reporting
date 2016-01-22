@@ -11,6 +11,7 @@ class TestRailBaseDocument(db.DynamicDocument):
 
 class Users(TestRailBaseDocument):
     xlsx_fields = [
+        '_id',
         'email',
         'is_active',
         'name',
@@ -23,6 +24,7 @@ class Users(TestRailBaseDocument):
 
 class CaseTypes(TestRailBaseDocument):
     xlsx_fields = [
+        '_id',
         'is_default',
         'name',
     ]
@@ -33,6 +35,7 @@ class CaseTypes(TestRailBaseDocument):
 
 class Priorities(TestRailBaseDocument):
     xlsx_fields = [
+        '_id',
         'is_default',
         'name',
         'priority',
@@ -47,6 +50,7 @@ class Priorities(TestRailBaseDocument):
 
 class Statuses(TestRailBaseDocument):
     xlsx_fields = [
+        '_id',
         'is_final',
         'is_system',
         'is_untested',
@@ -63,6 +67,7 @@ class Statuses(TestRailBaseDocument):
 
 class Projects(TestRailBaseDocument):
     xlsx_fields = [
+        '_id',
         'announcement',
         'completed_on',
         'is_completed',
@@ -83,12 +88,13 @@ class Projects(TestRailBaseDocument):
 
 class Milestones(TestRailBaseDocument):
     xlsx_fields = [
+        '_id',
         'completed_on',
         'description',
         'due_on',
         'is_completed',
         'name',
-        'project_id',
+        'project',
         'url',
     ]
 
@@ -103,7 +109,8 @@ class Milestones(TestRailBaseDocument):
 
 class Plans(TestRailBaseDocument):
     xlsx_fields = [
-        'assignedto_id',
+        '_id',
+        'assignedto',
         'blocked_count',
         'completed_on',
         'created_by',
@@ -119,10 +126,10 @@ class Plans(TestRailBaseDocument):
         'description',
         'failed_count',
         'is_completed',
-        'milestone_id',
+        'milestone',
         'name',
         'passed_count',
-        'project_id',
+        'project',
         'retest_count',
         'untested_count',
         'url',
@@ -131,49 +138,56 @@ class Plans(TestRailBaseDocument):
 
 class Configs(TestRailBaseDocument):
     xlsx_fields = [
+        '_id',
         'configs',
         'name',
-        'project_id',
+        'project',
     ]
 
 
 class Suites(TestRailBaseDocument):
     xlsx_fields = [
+        '_id',
         'completed_on',
         'description',
         'is_baseline',
         'is_completed',
         'is_master',
         'name',
-        'project_id',
+        'project',
         'url',
     ]
 
 
 class Sections(TestRailBaseDocument):
     xlsx_fields = [
+        '_id',
         'depth',
         'description',
         'display_order',
         'parent_id',
         'name',
         'suite_id',
+        'suite',
     ]
 
 
 class Cases(TestRailBaseDocument):
     xlsx_fields = [
+        '_id',
         'created_by',
         'created_on',
         'estimate',
         'estimate_forecast',
-        'milestone_id',
-        'priority_id',
+        'milestone',
+        'priority',
         'refs',
         'section_id',
+        'section',
         'suite_id',
+        'suite',
         'title',
-        'type_id',
+        'case_type',
         'updated_by',
         'updated_on',
     ]
@@ -181,7 +195,8 @@ class Cases(TestRailBaseDocument):
 
 class Runs(TestRailBaseDocument):
     xlsx_fields = [
-        'assignedto_id',
+        '_id',
+        'assignedto',
         'blocked_count',
         'completed_on',
         'config',
@@ -199,13 +214,15 @@ class Runs(TestRailBaseDocument):
         'failed_count',
         'include_all',
         'is_completed',
-        'milestone_id',
+        'milestone',
         'plan_id',
+        'plan',
         'name',
         'passed_count',
-        'project_id',
+        'project',
         'retest_count',
         'suite_id',
+        'suite',
         'untested_count',
         'url',
     ]
@@ -213,29 +230,34 @@ class Runs(TestRailBaseDocument):
 
 class Tests(TestRailBaseDocument):
     xlsx_fields = [
+        '_id',
         'assignedto_id',
         'case_id',
+        'case',
         'estimate',
         'estimate_forecast',
-        'milestone_id',
-        'priority_id',
+        'milestone',
+        'priority',
         'refs',
         'run_id',
-        'status_id',
+        'run',
+        'status',
         'title',
-        'type_id',
+        'case_type',
     ]
 
 
 class Results(TestRailBaseDocument):
     xlsx_fields = [
-        'assignedto_id',
+        '_id',
+        'assignedto',
         'comment',
         'created_by',
         'created_on',
         'defects',
         'elapsed',
-        'status_id',
+        'status',
         'test_id',
+        'test',
         'version',
     ]

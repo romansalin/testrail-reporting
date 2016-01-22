@@ -71,21 +71,7 @@ class MainReport(object):
 
         return length if length < max_length else max_length
 
-    def _get_row_data(self, document):
-        data = document.to_mongo()
-        fields = document.xlsx_fields
-
-        for key in data:
-            if key != '_id' and key not in fields:
-                del data[key]
-
-        for field in fields:
-            if field not in data:
-                data[field] = None
-
-        return OrderedDict(data)
-
-    def _replace_ids(self, row_data):
+    def _get_replaced_ids(self, row_data):
         additional_fields = OrderedDict()
         for k, v in row_data.items():
             if k == 'project_id':
@@ -101,7 +87,7 @@ class MainReport(object):
             elif k == 'section_id':
                 additional_fields.update({'section': self.sections.get(v)})
             elif k == 'type_id':
-                additional_fields.update({'type': self.case_types.get(v)})
+                additional_fields.update({'case_type': self.case_types.get(v)})
             elif k == 'plan_id':
                 additional_fields.update({'plan': self.plans.get(v)})
             elif k == 'status_id':
@@ -112,9 +98,7 @@ class MainReport(object):
                 additional_fields.update({'run': self.runs.get(v)})
             elif k == 'test_id':
                 additional_fields.update({'test': self.tests.get(v)})
-
-        row_data.update(additional_fields)
-        return row_data
+        return additional_fields
 
     def generate_xlsx(self):
         collections = [Users, CaseTypes, Statuses, Priorities, Projects,
@@ -123,35 +107,39 @@ class MainReport(object):
 
         str_io = cStringIO.StringIO()
         workbook = xlsxwriter.Workbook(str_io)
-        bold = workbook.add_format({'bold': True})
+        style_bold = workbook.add_format({'bold': True})
 
         for collection in collections:
-            row = 1
             worksheet = workbook.add_worksheet(collection.__name__)
-            for document in collection.objects.no_cache().order_by('id'):
-                row_data = self._get_row_data(document)
-                row_data = self._replace_ids(row_data)
-                row_data = OrderedDict(sorted(row_data.items(),
-                                              key=lambda x: x[0]))
+            model_fields = collection.xlsx_fields
 
-                col = 0
-                for k, v in row_data.items():
-                    if row == 1:
-                        width = self._calc_column_width(k)
-                        worksheet.set_column(col, col, width=width)
-                        worksheet.write(0, col, k, bold)
+            for col, field in enumerate(model_fields):
+                width = self._calc_column_width(field)
+                worksheet.set_column(col, col, width=width)
+                worksheet.write(0, col, field, style_bold)
+            worksheet.freeze_panes(1, 0)
 
-                    if isinstance(v, datetime):
-                        v = v.isoformat()
-                    elif isinstance(v, list):
-                        v = json.dumps(v)
+            row = 1
+            for document in collection.objects\
+                    .no_cache()\
+                    .order_by('id'):
+                row_data = OrderedDict(document.to_mongo())
+                additional_rows = self._get_replaced_ids(row_data)
+                row_data.update(additional_rows)
 
-                    width = self._calc_column_width(v)
+                for col, field in enumerate(model_fields):
+                    value = row_data.get(field)
+                    if isinstance(value, datetime):
+                        value = value.isoformat()
+                    elif isinstance(value, list):
+                        value = json.dumps(value)
+
+                    width = self._calc_column_width(value)
                     worksheet.set_column(col, col, width=width)
-                    worksheet.write(row, col, v)
-
-                    col += 1
+                    worksheet.write(row, col, value)
                 row += 1
+
+        # Test runs report
 
         workbook.close()
         return str_io.getvalue()

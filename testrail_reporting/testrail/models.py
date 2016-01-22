@@ -10,31 +10,24 @@ class TestRailBaseDocument(db.DynamicDocument):
 
 
 class Users(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'email',
         'is_active',
         'name',
     ]
 
-    email = db.StringField()
-    is_active = db.BooleanField()
-    name = db.StringField()
-
 
 class CaseTypes(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'is_default',
         'name',
     ]
 
-    is_default = db.BooleanField()
-    name = db.StringField()
-
 
 class Priorities(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'is_default',
         'name',
@@ -42,14 +35,9 @@ class Priorities(TestRailBaseDocument):
         'short_name',
     ]
 
-    is_default = db.BooleanField()
-    name = db.StringField()
-    priority = db.IntField()
-    short_name = db.StringField()
-
 
 class Statuses(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'is_final',
         'is_system',
@@ -58,15 +46,9 @@ class Statuses(TestRailBaseDocument):
         'name',
     ]
 
-    is_final = db.BooleanField()
-    is_system = db.BooleanField()
-    is_untested = db.BooleanField()
-    label = db.StringField()
-    name = db.StringField()
-
 
 class Projects(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'announcement',
         'completed_on',
@@ -77,17 +59,9 @@ class Projects(TestRailBaseDocument):
         'url',
     ]
 
-    announcement = db.StringField()
-    completed_on = db.DateTimeField()
-    is_completed = db.BooleanField()
-    name = db.StringField()
-    show_announcement = db.IntField()
-    suite_mode = db.IntField()
-    url = db.StringField()
-
 
 class Milestones(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'completed_on',
         'description',
@@ -98,17 +72,9 @@ class Milestones(TestRailBaseDocument):
         'url',
     ]
 
-    completed_on = db.DateTimeField()
-    description = db.StringField()
-    due_on = db.DateTimeField()
-    is_completed = db.BooleanField()
-    name = db.StringField()
-    project_id = db.IntField()
-    url = db.StringField()
-
 
 class Plans(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'assignedto',
         'blocked_count',
@@ -137,7 +103,7 @@ class Plans(TestRailBaseDocument):
 
 
 class Configs(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'configs',
         'name',
@@ -146,7 +112,7 @@ class Configs(TestRailBaseDocument):
 
 
 class Suites(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'completed_on',
         'description',
@@ -160,7 +126,7 @@ class Suites(TestRailBaseDocument):
 
 
 class Sections(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'depth',
         'description',
@@ -173,7 +139,7 @@ class Sections(TestRailBaseDocument):
 
 
 class Cases(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'created_by',
         'created_on',
@@ -194,7 +160,7 @@ class Cases(TestRailBaseDocument):
 
 
 class Runs(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'assignedto',
         'blocked_count',
@@ -229,7 +195,7 @@ class Runs(TestRailBaseDocument):
 
 
 class Tests(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'assignedto_id',
         'case_id',
@@ -248,7 +214,7 @@ class Tests(TestRailBaseDocument):
 
 
 class Results(TestRailBaseDocument):
-    xlsx_fields = [
+    report_fields = [
         '_id',
         'assignedto',
         'comment',

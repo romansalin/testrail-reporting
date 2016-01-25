@@ -68,15 +68,15 @@ class Sync(Command):
         for project in projects:
             app.logger.info('Sync Project "{0}"'.format(project.get('name')))
             project['completed_on'] = timestamp_to_utc(
-                project['completed_on'])
+                project.get('completed_on'))
             new_projects.append(Projects(**project))
 
             milestones = self.get_data('milestones/{0}'.format(project['id']))
             for milestone in milestones:
                 milestone['completed_on'] = timestamp_to_utc(
-                    project['completed_on'])
+                    project.get('completed_on'))
                 milestone['due_on'] = timestamp_to_utc(
-                    milestone['due_on'])
+                    milestone.get('due_on'))
                 new_milestones.append(Milestones(**milestone))
 
             configs = self.get_data('configs/{0}'.format(project['id']))
@@ -88,16 +88,16 @@ class Sync(Command):
                 app.logger.info('Sync Suite "{0}"'.format(suite.get('name')))
 
                 suite['completed_on'] = timestamp_to_utc(
-                    suite['completed_on'])
+                    suite.get('completed_on'))
                 new_suites.append(Suites(**suite))
 
                 cases = self.get_data('cases/{0}&suite_id={1}'.format(
                     project['id'], suite['id']))
                 for case in cases:
                     case['created_on'] = timestamp_to_utc(
-                        case['created_on'])
+                        case.get('created_on'))
                     case['updated_on'] = timestamp_to_utc(
-                        case['updated_on'])
+                        case.get('updated_on'))
                     new_cases.append(Cases(**case))
 
                 sections = self.get_data('sections/{0}&suite_id={1}'.format(
@@ -111,8 +111,8 @@ class Sync(Command):
                 app.logger.info('Sync Plan "{0}"'.format(plan.get('name')))
 
                 plan['completed_on'] = timestamp_to_utc(
-                    plan['completed_on'])
-                plan['created_on'] = timestamp_to_utc(plan['created_on'])
+                    plan.get('completed_on'))
+                plan['created_on'] = timestamp_to_utc(plan.get('created_on'))
                 new_plans.append(Plans(**plan))
 
                 # repeat request to every plan because entries does't come
@@ -122,8 +122,8 @@ class Sync(Command):
                 for entry in plan_entries['entries']:
                     for run in entry['runs']:
                         run.update({
-                            'config': entry['name'],
-                            'suite_id': entry['suite_id'],
+                            'config': entry.get('name'),
+                            'suite_id': entry.get('suite_id'),
                         })
                         plan_runs.append(run)
 
@@ -133,8 +133,8 @@ class Sync(Command):
                 app.logger.info('Sync Run "{0}"'.format(run.get('name')))
 
                 run['completed_on'] = timestamp_to_utc(
-                    run['completed_on'])
-                run['created_on'] = timestamp_to_utc(run['created_on'])
+                    run.get('completed_on'))
+                run['created_on'] = timestamp_to_utc(run.get('created_on'))
                 new_runs.append(Runs(**run))
 
                 tests = self.get_data('tests/{0}'.format(run['id']))
@@ -145,7 +145,7 @@ class Sync(Command):
                     'results_for_run/{0}'.format(run['id']))
                 for result in results:
                     result['created_on'] = timestamp_to_utc(
-                        result['created_on'])
+                        result.get('created_on'))
                     new_results.append(Results(**result))
 
         app.logger.info('Start saving objects.')

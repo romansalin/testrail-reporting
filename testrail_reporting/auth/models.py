@@ -8,26 +8,23 @@ from testrail_reporting.extensions import db
 log = logging.getLogger(__name__)
 
 
-class Role(db.Document, RoleMixin):
+class AuthRole(db.Document, RoleMixin):
     name = db.StringField(max_length=80, unique=True)
     description = db.StringField(max_length=255)
 
 
-class User(db.DynamicDocument, UserMixin):
+class AuthUser(db.DynamicDocument, UserMixin):
+    id = db.StringField()
     email = db.StringField(max_length=255)
     password = db.StringField(max_length=255)
-    active = db.BooleanField(default=True)
-    confirmed_at = db.DateTimeField()
-    roles = db.ListField(db.ReferenceField(Role), default=[])
-
-    id = db.StringField()
-    google_token = db.StringField()
     name = db.StringField()
     family_name = db.StringField()
     given_name = db.StringField()
     picture = db.StringField()
     hd = db.StringField()
     verified_email = db.BooleanField()
+    google_token = db.StringField()
+    roles = db.ListField(db.ReferenceField(AuthRole), default=[])
 
     @classmethod
     def get_current_user(cls, google_token):

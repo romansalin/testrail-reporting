@@ -10,6 +10,10 @@ _LOCK = threading.Lock()
 GOOGLE_TOKEN = 'google_token'
 
 
+def get_access_token():
+    return session.get('google_token')
+
+
 def _create_remote_app():
     google = oauth.remote_app(
         'google',
@@ -26,7 +30,7 @@ def _create_remote_app():
         authorize_url='https://accounts.google.com/o/oauth2/auth',
     )
 
-    google._tokengetter = session.get(GOOGLE_TOKEN)
+    google._tokengetter = get_access_token
     return google
 
 

@@ -56,7 +56,7 @@ class MainReport(ExcelReport):
             d.pk: d.name
             for d in Plans.objects.no_cache().only('id', 'name')}
 
-        self.status = {
+        self.statuses = {
             d.pk: d.label
             for d in Statuses.objects.no_cache().only('id', 'label')}
 
@@ -92,23 +92,22 @@ class MainReport(ExcelReport):
             elif k == 'plan_id':
                 additional_fields.update({'plan': self.plans.get(v)})
             elif k == 'status_id':
-                additional_fields.update({'status': self.status.get(v)})
+                additional_fields.update({'status': self.statuses.get(v)})
             elif k == 'case_id':
                 additional_fields.update({'case': self.cases.get(v)})
             elif k == 'run_id':
                 additional_fields.update({'run': self.runs.get(v)})
             elif k == 'test_id':
                 additional_fields.update({'test': self.tests.get(v)})
-            elif k == 'created_by':
-                additional_fields.update({'created_by': self.users.get(v)})
+            elif k == 'created_by' or k == 'updated_by':
+                additional_fields.update({k: self.users.get(v)})
         return additional_fields
 
     def generate_xlsx(self):
-        # TODO(romansalin): get DRY
-        # collections = [Users, CaseTypes, Statuses, Priorities, Projects,
-        #                Milestones, Plans, Configs, Suites, Cases, Sections,
-        #                Runs, Tests, Results]
-        collections = []
+        # TODO(romansalin): refactor to get DRY
+        collections = [Users, CaseTypes, Statuses, Priorities, Projects,
+                       Milestones, Plans, Configs, Suites, Cases, Sections,
+                       Runs, Tests, Results]
 
         str_io = cStringIO.StringIO()
         workbook = xlsxwriter.Workbook(str_io)
@@ -125,7 +124,7 @@ class MainReport(ExcelReport):
             worksheet.freeze_panes(1, 0)
 
             documents = collection.objects.no_cache().order_by('id')
-            for row, document in enumerate(documents):
+            for row, document in enumerate(documents, start=1):
                 row_data = OrderedDict(document.to_mongo())
                 additional_rows = self.get_replaced_ids(row_data)
                 row_data.update(additional_rows)
@@ -142,16 +141,14 @@ class MainReport(ExcelReport):
                     worksheet.write(row, col, value)
 
         # Test runs report
-        worksheet = workbook.add_worksheet('Test Runs report')
+        worksheet = workbook.add_worksheet('Test Runs Report')
         column_names = ['QA team', 'Run ID', 'Run', 'Run Configuration',
                         'Milestone', 'Passed', 'ProdFailed', 'TestFailed',
                         'InfraFailed', 'Skipped', 'Other', 'Failed', 'Blocked',
-                        'In progress', 'Fixed', 'Regression']
-        runs = Runs.objects\
-            .order_by('id')\
-            .scalar('id', 'name', 'config', 'milestone_id')
-        tests = Tests.objects\
-            .only("run_id", "status_id")\
+                        'In progress', 'Fixed', 'Regression', 'Untested']
+        tests = Tests.objects \
+            .only("run_id", "status_id") \
+            .order_by('id') \
             .aggregate(
                 {
                     "$group": {
@@ -174,7 +171,41 @@ class MainReport(ExcelReport):
                     }
                 },
             )
+        tests_map = {}
+        for test in tests:
+            statuses = {}
+            for test_status in test['statuses']:
+                statuses[self.statuses.get(test_status['status'])] = \
+                    test_status['count']
+            if '_id' in test and test['_id']:
+                tests_map[test['_id']] = statuses
+
         data = []
+        runs = Runs.objects \
+            .order_by('id') \
+            .only('id', 'name', 'config', 'milestone_id')
+        for run in runs:
+            run_id = run['id']
+            if run_id in tests_map:
+                data.append([
+                    'team',
+                    'R{0}'.format(run_id),
+                    run['name'],
+                    run['config'],
+                    self.milestones.get(run['milestone_id']),
+                    tests_map[run_id].get('Passed'),
+                    tests_map[run_id].get('ProdFailed'),
+                    tests_map[run_id].get('TestFailed'),
+                    tests_map[run_id].get('InfraFailed'),
+                    tests_map[run_id].get('Skipped'),
+                    tests_map[run_id].get('Other'),
+                    tests_map[run_id].get('Failed'),
+                    tests_map[run_id].get('Blocked'),
+                    tests_map[run_id].get('In progress'),
+                    tests_map[run_id].get('Fixed'),
+                    tests_map[run_id].get('Regression'),
+                    tests_map[run_id].get('Untested'),
+                ]),
 
         for col, field in enumerate(column_names):
             width = self.calc_column_width(field)
@@ -182,7 +213,7 @@ class MainReport(ExcelReport):
             worksheet.write(0, col, field, style_bold)
         worksheet.freeze_panes(1, 0)
 
-        for row, record in enumerate(data):
+        for row, record in enumerate(data, start=1):
             for col, field in enumerate(record):
                 value = field
                 if isinstance(value, datetime):

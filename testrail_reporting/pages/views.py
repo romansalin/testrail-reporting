@@ -7,7 +7,7 @@ pages = Blueprint('pages', __name__, url_prefix='')
 
 
 @pages.route('/')
-# @auth_required
+@auth_required
 def index():
     return render_template('index.html')
 

@@ -1,7 +1,7 @@
+from collections import OrderedDict
 import cStringIO
 from datetime import datetime
 import json
-from collections import OrderedDict
 
 import xlsxwriter
 
@@ -10,9 +10,20 @@ from testrail_reporting.testrail.models import (
     Results, CaseTypes, Statuses, Priorities, Configs)
 
 
-class MainReport(object):
+class ExcelReport(object):
+    def calc_column_width(self, val):
+        length = 8
+        max_length = 60
+        if isinstance(val, int):
+            length += len(str(val))
+        elif isinstance(val, basestring):
+            length += len(val.encode('ascii', 'ignore'))
+        return length if length < max_length else max_length
+
+
+class MainReport(ExcelReport):
     def __init__(self):
-        # TODO(rsalin): move to model and cache for a while
+        # TODO(rsalin): move to the model and cache for a while
         self.users = {
             d.pk: '{0} ({1})'.format(d.name, d.email)
             for d in Users.objects.no_cache().only('id', 'name', 'email')}
@@ -61,31 +72,7 @@ class MainReport(object):
             d.pk: d.title
             for d in Tests.objects.no_cache().only('id', 'title')}
 
-    def _calc_column_width(self, val):
-        length = 8
-        max_length = 60
-        if isinstance(val, int):
-            length += len(str(val))
-        elif isinstance(val, basestring):
-            length += len(val.encode('ascii', 'ignore'))
-
-        return length if length < max_length else max_length
-
-    def _get_row_data(self, document):
-        data = document.to_mongo()
-        fields = document.xlsx_fields
-
-        for key in data:
-            if key != '_id' and key not in fields:
-                del data[key]
-
-        for field in fields:
-            if field not in data:
-                data[field] = None
-
-        return OrderedDict(data)
-
-    def _replace_ids(self, row_data):
+    def get_replaced_ids(self, row_data):
         additional_fields = OrderedDict()
         for k, v in row_data.items():
             if k == 'project_id':
@@ -101,7 +88,7 @@ class MainReport(object):
             elif k == 'section_id':
                 additional_fields.update({'section': self.sections.get(v)})
             elif k == 'type_id':
-                additional_fields.update({'type': self.case_types.get(v)})
+                additional_fields.update({'case_type': self.case_types.get(v)})
             elif k == 'plan_id':
                 additional_fields.update({'plan': self.plans.get(v)})
             elif k == 'status_id':
@@ -112,46 +99,100 @@ class MainReport(object):
                 additional_fields.update({'run': self.runs.get(v)})
             elif k == 'test_id':
                 additional_fields.update({'test': self.tests.get(v)})
-
-        row_data.update(additional_fields)
-        return row_data
+            elif k == 'created_by':
+                additional_fields.update({'created_by': self.users.get(v)})
+        return additional_fields
 
     def generate_xlsx(self):
-        collections = [Users, CaseTypes, Statuses, Priorities, Projects,
-                       Milestones, Plans, Configs, Suites, Cases, Sections,
-                       Runs, Tests, Results]
+        # TODO(romansalin): get DRY
+        # collections = [Users, CaseTypes, Statuses, Priorities, Projects,
+        #                Milestones, Plans, Configs, Suites, Cases, Sections,
+        #                Runs, Tests, Results]
+        collections = []
 
         str_io = cStringIO.StringIO()
         workbook = xlsxwriter.Workbook(str_io)
-        bold = workbook.add_format({'bold': True})
+        style_bold = workbook.add_format({'bold': True})
 
         for collection in collections:
-            row = 1
             worksheet = workbook.add_worksheet(collection.__name__)
-            for document in collection.objects.no_cache().order_by('id'):
-                row_data = self._get_row_data(document)
-                row_data = self._replace_ids(row_data)
-                row_data = OrderedDict(sorted(row_data.items(),
-                                              key=lambda x: x[0]))
+            report_fields = collection.report_fields
 
-                col = 0
-                for k, v in row_data.items():
-                    if row == 1:
-                        width = self._calc_column_width(k)
-                        worksheet.set_column(col, col, width=width)
-                        worksheet.write(0, col, k, bold)
+            for col, field in enumerate(report_fields):
+                width = self.calc_column_width(field)
+                worksheet.set_column(col, col, width=width)
+                worksheet.write(0, col, field, style_bold)
+            worksheet.freeze_panes(1, 0)
 
-                    if isinstance(v, datetime):
-                        v = v.isoformat()
-                    elif isinstance(v, list):
-                        v = json.dumps(v)
+            documents = collection.objects.no_cache().order_by('id')
+            for row, document in enumerate(documents):
+                row_data = OrderedDict(document.to_mongo())
+                additional_rows = self.get_replaced_ids(row_data)
+                row_data.update(additional_rows)
 
-                    width = self._calc_column_width(v)
+                for col, field in enumerate(report_fields):
+                    value = row_data.get(field)
+                    if isinstance(value, datetime):
+                        value = value.isoformat()
+                    elif isinstance(value, list):
+                        value = json.dumps(value)
+
+                    width = self.calc_column_width(value)
                     worksheet.set_column(col, col, width=width)
-                    worksheet.write(row, col, v)
+                    worksheet.write(row, col, value)
 
-                    col += 1
-                row += 1
+        # Test runs report
+        worksheet = workbook.add_worksheet('Test Runs report')
+        column_names = ['QA team', 'Run ID', 'Run', 'Run Configuration',
+                        'Milestone', 'Passed', 'ProdFailed', 'TestFailed',
+                        'InfraFailed', 'Skipped', 'Other', 'Failed', 'Blocked',
+                        'In progress', 'Fixed', 'Regression']
+        runs = Runs.objects\
+            .order_by('id')\
+            .scalar('id', 'name', 'config', 'milestone_id')
+        tests = Tests.objects\
+            .only("run_id", "status_id")\
+            .aggregate(
+                {
+                    "$group": {
+                        "_id": {
+                            "run_id": "$run_id",
+                            "status_id": "$status_id",
+                        },
+                        "count": {"$sum": 1},
+                    },
+                },
+                {
+                    "$group": {
+                        "_id": "$_id.run_id",
+                        "statuses": {
+                            "$push": {
+                                "status": "$_id.status_id",
+                                "count": "$count",
+                            }
+                        }
+                    }
+                },
+            )
+        data = []
+
+        for col, field in enumerate(column_names):
+            width = self.calc_column_width(field)
+            worksheet.set_column(col, col, width=width)
+            worksheet.write(0, col, field, style_bold)
+        worksheet.freeze_panes(1, 0)
+
+        for row, record in enumerate(data):
+            for col, field in enumerate(record):
+                value = field
+                if isinstance(value, datetime):
+                    value = value.isoformat()
+                elif isinstance(value, list):
+                    value = json.dumps(value)
+
+                width = self.calc_column_width(value)
+                worksheet.set_column(col, col, width=width)
+                worksheet.write(row, col, value)
 
         workbook.close()
         return str_io.getvalue()

@@ -133,45 +133,59 @@ class Sync(Command):
         app.logger.info('Start saving objects.')
 
         Users.objects.delete()
-        Users.objects.insert(new_users)
+        if new_users:
+            Users.objects.insert(new_users)
 
         CaseTypes.objects.delete()
-        CaseTypes.objects.insert(new_case_types)
+        if new_case_types:
+            CaseTypes.objects.insert(new_case_types)
 
         Statuses.objects.delete()
-        Statuses.objects.insert(new_statuses)
+        if new_statuses:
+            Statuses.objects.insert(new_statuses)
 
         Priorities.objects.delete()
-        Priorities.objects.insert(new_priorities)
+        if new_priorities:
+            Priorities.objects.insert(new_priorities)
 
         Projects.objects.delete()
-        Projects.objects.insert(new_projects)
+        if new_projects:
+            Projects.objects.insert(new_projects)
 
         Milestones.objects.delete()
-        Milestones.objects.insert(new_milestones)
+        if new_milestones:
+            Milestones.objects.insert(new_milestones)
 
         Plans.objects.delete()
-        Plans.objects.insert(new_plans)
+        if new_plans:
+            Plans.objects.insert(new_plans)
 
         Configs.objects.delete()
-        Configs.objects.insert(new_configs)
+        if new_configs:
+            Configs.objects.insert(new_configs)
 
         Suites.objects.delete()
-        Suites.objects.insert(new_suites)
+        if new_suites:
+            Suites.objects.insert(new_suites)
 
         Cases.objects.delete()
-        Cases.objects.insert(new_cases)
+        if new_cases:
+            Cases.objects.insert(new_cases)
 
         Sections.objects.delete()
-        Sections.objects.insert(new_sections)
+        if new_sections:
+            Sections.objects.insert(new_sections)
 
         Runs.objects.delete()
-        Runs.objects.insert(new_runs)
+        if new_runs:
+            Runs.objects.insert(new_runs)
 
         Tests.objects.delete()
-        Tests.objects.insert(new_tests)
+        if new_tests:
+            Tests.objects.insert(new_tests)
 
         Results.objects.delete()
-        Results.objects.insert(new_results)
+        if new_results:
+            Results.objects.insert(new_results)
 
         app.logger.info('TestRail sync has been finished!')

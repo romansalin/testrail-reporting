@@ -72,6 +72,8 @@ class Milestones(TestRailBaseDocument):
         'url',
     ]
 
+    project_id = db.IntField(required=True, null=True)
+
 
 class Plans(TestRailBaseDocument):
     report_fields = [
@@ -101,6 +103,11 @@ class Plans(TestRailBaseDocument):
         'url',
     ]
 
+    assignedto_id = db.IntField(required=True, null=True)
+    created_by = db.IntField(required=True, null=True)
+    milestone_id = db.IntField(required=True, null=True)
+    project_id = db.IntField(required=True, null=True)
+
 
 class Configs(TestRailBaseDocument):
     report_fields = [
@@ -109,6 +116,8 @@ class Configs(TestRailBaseDocument):
         'name',
         'project',
     ]
+
+    project_id = db.IntField(required=True, null=True)
 
 
 class Suites(TestRailBaseDocument):
@@ -124,6 +133,8 @@ class Suites(TestRailBaseDocument):
         'url',
     ]
 
+    project_id = db.IntField(required=True, null=True)
+
 
 class Sections(TestRailBaseDocument):
     report_fields = [
@@ -136,6 +147,8 @@ class Sections(TestRailBaseDocument):
         'suite_id',
         'suite',
     ]
+
+    suite_id = db.IntField(required=True, null=True)
 
 
 class Cases(TestRailBaseDocument):
@@ -157,6 +170,14 @@ class Cases(TestRailBaseDocument):
         'updated_by',
         'updated_on',
     ]
+
+    created_by = db.IntField(required=True, null=True)
+    milestone_id = db.IntField(required=True, null=True)
+    priority_id = db.IntField(required=True, null=True)
+    section_id = db.IntField(required=True, null=True)
+    suite_id = db.IntField(required=True, null=True)
+    type_id = db.IntField(required=True, null=True)
+    updated_by = db.IntField(required=True, null=True)
 
 
 class Runs(TestRailBaseDocument):
@@ -193,6 +214,14 @@ class Runs(TestRailBaseDocument):
         'url',
     ]
 
+    assignedto_id = db.IntField(required=True, null=True)
+    config = db.StringField(required=True, null=True)
+    created_by = db.IntField(required=True, null=True)
+    milestone_id = db.IntField(required=True, null=True)
+    plan_id = db.IntField(required=True, null=True)
+    project_id = db.IntField(required=True, null=True)
+    suite_id = db.IntField(required=True, null=True)
+
 
 class Tests(TestRailBaseDocument):
     report_fields = [
@@ -212,6 +241,13 @@ class Tests(TestRailBaseDocument):
         'case_type',
     ]
 
+    assignedto_id = db.IntField(required=True, null=True)
+    case_id = db.IntField(required=True, null=True)
+    milestone_id = db.IntField(required=True, null=True)
+    priority_id = db.IntField(required=True, null=True)
+    run_id = db.IntField(required=True, null=True)
+    type_id = db.IntField(required=True, null=True)
+
 
 class Results(TestRailBaseDocument):
     report_fields = [
@@ -227,3 +263,7 @@ class Results(TestRailBaseDocument):
         'test',
         'version',
     ]
+
+    assignedto_id = db.IntField(required=True, null=True)
+    created_by = db.IntField(required=True, null=True)
+    test_id = db.IntField(required=True, null=True)

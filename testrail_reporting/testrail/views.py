@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from flask import Blueprint
 from flask import Response
 
@@ -12,7 +10,7 @@ testrail = Blueprint('testrail', __name__)
 
 
 @testrail.route('/reports/all')
-# @auth_required
+@auth_required
 def index():
     filename = 'testrail-report-{0}.xlsx'.format(get_now_iso())
     report = reports.MainReport()

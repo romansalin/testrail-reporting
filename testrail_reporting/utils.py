@@ -9,5 +9,5 @@ def timestamp_to_utc(timestamp):
     return datetime.fromtimestamp(timestamp, tz=pytz.utc)
 
 
-def get_now_iso():
-    return datetime.now().isoformat()
+def get_now_iso(sep='T'):
+    return datetime.now().replace(microsecond=0).isoformat(sep)

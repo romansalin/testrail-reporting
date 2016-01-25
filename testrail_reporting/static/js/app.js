@@ -6,7 +6,7 @@ import '../less/app.less';
 
 // TODO(rsalin): import jquery here
 import 'bootstrap-less/js/bootstrap.min';
-import moment from 'moment';
+import moment from 'moment/min/moment.min';
 import 'bootstrap-material-design/dist/js/material.min';
 import 'bootstrap-material-design/dist/js/ripples.min';
 

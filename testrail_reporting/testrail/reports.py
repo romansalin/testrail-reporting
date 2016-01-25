@@ -182,13 +182,13 @@ class MainReport(ExcelReport):
 
         data = []
         runs = Runs.objects \
-            .order_by('id') \
-            .only('id', 'name', 'config', 'milestone_id')
+            .order_by('-id') \
+            .only('custom_qa_team', 'id', 'name', 'config', 'milestone_id')
         for run in runs:
             run_id = run['id']
             if run_id in tests_map:
                 data.append([
-                    'team',
+                    run['custom_qa_team'],
                     'R{0}'.format(run_id),
                     run['name'],
                     run['config'],

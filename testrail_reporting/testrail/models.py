@@ -212,6 +212,13 @@ class Runs(TestRailBaseDocument):
         'suite',
         'untested_count',
         'url',
+        # Custom fields
+        'custom_case_complexity',
+        'custom_qa_team',
+        'custom_report_label',
+        'custom_test_case_description',
+        'custom_test_case_steps',
+        'custom_test_group',
     ]
 
     assignedto_id = db.IntField(required=True, null=True)

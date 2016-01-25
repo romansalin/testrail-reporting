@@ -11,6 +11,7 @@ from testrail_reporting.utils import timestamp_to_utc
 
 # TODO(rsalin): threading, too slow!
 # TODO(rsalin): retrieve only new data and clean non-existent
+# TODO(rsalin): getting Case Fields and Result Fields
 class Sync(Command):
     def __init__(self):
         super(Sync, self).__init__()
@@ -38,11 +39,11 @@ class Sync(Command):
         new_priorities = []
         new_projects = []
         new_milestones = []
-        new_plans = []
         new_configs = []
         new_suites = []
         new_cases = []
         new_sections = []
+        new_plans = []
         new_runs = []
         new_tests = []
         new_results = []
@@ -78,13 +79,6 @@ class Sync(Command):
                     milestone['due_on'])
                 new_milestones.append(Milestones(**milestone))
 
-            plans = self.get_data('plans/{0}'.format(project['id']))
-            for plan in plans:
-                plan['completed_on'] = timestamp_to_utc(
-                    plan['completed_on'])
-                plan['created_on'] = timestamp_to_utc(plan['created_on'])
-                new_plans.append(Plans(**plan))
-
             configs = self.get_data('configs/{0}'.format(project['id']))
             for config in configs:
                 new_configs.append(Configs(**config))
@@ -111,8 +105,31 @@ class Sync(Command):
                 for section in sections:
                     new_sections.append(Sections(**section))
 
+            plan_runs = []
+            plans = self.get_data('plans/{0}'.format(project['id']))
+            for plan in plans:
+                app.logger.info('Sync plan "{0}"'.format(plan.get('name')))
+
+                plan['completed_on'] = timestamp_to_utc(
+                    plan['completed_on'])
+                plan['created_on'] = timestamp_to_utc(plan['created_on'])
+                new_plans.append(Plans(**plan))
+
+                # repeat request to every plan because entries does't come
+                # from plans/...
+                plan_entries = self.get_data('plan/{0}'.format(
+                    plan['id']))
+                for entry in plan_entries['entries']:
+                    for run in entry['runs']:
+                        run.update({
+                            'config': entry['name'],
+                            'suite_id': entry['suite_id'],
+                        })
+                        plan_runs.append(run)
+
             runs = self.get_data('runs/{0}'.format(project['id']))
-            for run in runs:
+            all_runs = plan_runs + runs
+            for run in all_runs:
                 app.logger.info('Sync run "{0}"'.format(run.get('name')))
 
                 run['completed_on'] = timestamp_to_utc(
@@ -124,11 +141,12 @@ class Sync(Command):
                 for test in tests:
                     new_tests.append(Tests(**test))
 
-                    results = self.get_data('results/{0}'.format(test['id']))
-                    for result in results:
-                        result['created_on'] = timestamp_to_utc(
-                            result['created_on'])
-                        new_results.append(Results(**result))
+                results = self.get_data(
+                    'results_for_run/{0}'.format(run['id']))
+                for result in results:
+                    result['created_on'] = timestamp_to_utc(
+                        result['created_on'])
+                    new_results.append(Results(**result))
 
         app.logger.info('Start saving objects.')
 
@@ -156,10 +174,6 @@ class Sync(Command):
         if new_milestones:
             Milestones.objects.insert(new_milestones)
 
-        Plans.objects.delete()
-        if new_plans:
-            Plans.objects.insert(new_plans)
-
         Configs.objects.delete()
         if new_configs:
             Configs.objects.insert(new_configs)
@@ -175,6 +189,10 @@ class Sync(Command):
         Sections.objects.delete()
         if new_sections:
             Sections.objects.insert(new_sections)
+
+        Plans.objects.delete()
+        if new_plans:
+            Plans.objects.insert(new_plans)
 
         Runs.objects.delete()
         if new_runs:

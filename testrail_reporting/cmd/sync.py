@@ -66,7 +66,7 @@ class Sync(Command):
 
         projects = self.get_data('projects')
         for project in projects:
-            app.logger.info('Sync project "{0}"'.format(project.get('name')))
+            app.logger.info('Sync Project "{0}"'.format(project.get('name')))
             project['completed_on'] = timestamp_to_utc(
                 project['completed_on'])
             new_projects.append(Projects(**project))
@@ -85,7 +85,7 @@ class Sync(Command):
 
             suites = self.get_data('suites/{0}'.format(project['id']))
             for suite in suites:
-                app.logger.info('Sync suite "{0}"'.format(suite.get('name')))
+                app.logger.info('Sync Suite "{0}"'.format(suite.get('name')))
 
                 suite['completed_on'] = timestamp_to_utc(
                     suite['completed_on'])
@@ -108,7 +108,7 @@ class Sync(Command):
             plan_runs = []
             plans = self.get_data('plans/{0}'.format(project['id']))
             for plan in plans:
-                app.logger.info('Sync plan "{0}"'.format(plan.get('name')))
+                app.logger.info('Sync Plan "{0}"'.format(plan.get('name')))
 
                 plan['completed_on'] = timestamp_to_utc(
                     plan['completed_on'])
@@ -130,7 +130,7 @@ class Sync(Command):
             runs = self.get_data('runs/{0}'.format(project['id']))
             all_runs = plan_runs + runs
             for run in all_runs:
-                app.logger.info('Sync run "{0}"'.format(run.get('name')))
+                app.logger.info('Sync Run "{0}"'.format(run.get('name')))
 
                 run['completed_on'] = timestamp_to_utc(
                     run['completed_on'])

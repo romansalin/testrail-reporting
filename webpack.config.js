@@ -6,7 +6,7 @@ module.exports = {
   //debug: true,
   entry: path.resolve(__dirname, 'testrail_reporting/static/js/app.js'),
   output: {
-    path: path.resolve(__dirname, 'testrail_reporting/static/js/build'),
+    path: path.resolve(__dirname, 'testrail_reporting/static/build'),
     filename: 'bundle.js'
   },
   resolve: {

@@ -7,7 +7,7 @@ from flask import session
 from flask import url_for
 
 from testrail_reporting.auth import oauth
-from testrail_reporting.auth.models import User
+from testrail_reporting.auth.models import AuthUser
 
 log = logging.getLogger(__name__)
 auth = Blueprint('auth', __name__)
@@ -25,7 +25,7 @@ def authorized():
     if resp is None:
         return 'Access denied: reason=%s error=%s' % (
             request.args['error_reason'],
-            request.args['error_description']
+            request.args['error_description'],
         )
 
     google_token = resp['access_token']
@@ -33,7 +33,8 @@ def authorized():
 
     user_info = oauth.get_google().get('userinfo').data
     user_info.update({oauth.GOOGLE_TOKEN: google_token})
-    User.objects(email=user_info["email"]).update_one(**user_info)
+    AuthUser.objects(email=user_info["email"]).update_one(upsert=True,
+                                                          **user_info)
 
     return redirect(url_for('pages.index'))
 

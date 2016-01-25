@@ -60,8 +60,8 @@ def configure_extensions(app):
     ext.api.init_app(app)
 
     # Setup Flask-Security
-    user_datastore = MongoEngineUserDatastore(ext.db, auth_models.User,
-                                              auth_models.Role)
+    user_datastore = MongoEngineUserDatastore(ext.db, auth_models.AuthUser,
+                                              auth_models.AuthRole)
     ext.security.init_app(app, user_datastore)
 
     if app.debug:

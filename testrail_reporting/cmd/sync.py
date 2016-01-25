@@ -117,9 +117,9 @@ class Sync(Command):
 
                 # repeat request to every plan because entries does't come
                 # from plans/...
-                plan_entries = self.get_data('plan/{0}'.format(
-                    plan['id']))
-                for entry in plan_entries['entries']:
+                plan_entries = self.get_data(
+                    'plan/{0}'.format(plan['id'])).get('entries', [])
+                for entry in plan_entries:
                     for run in entry['runs']:
                         run.update({
                             'config': entry.get('name'),

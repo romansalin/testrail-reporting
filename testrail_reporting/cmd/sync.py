@@ -84,30 +84,30 @@ class Sync(Command):
                 new_config = Configs(**config)
                 new_config.save()
 
-            suites = self.get_data('suites/{0}'.format(project['id']))
-            for suite in suites:
-                app.logger.info('Sync Suite "{0}"'.format(suite.get('name')))
-
-                suite['completed_on'] = timestamp_to_utc(
-                    suite.get('completed_on'))
-                new_suite = Suites(**suite)
-                new_suite.save()
-
-                sections = self.get_data('sections/{0}&suite_id={1}'.format(
-                    project['id'], suite['id']))
-                for section in sections:
-                    new_section = Sections(**section)
-                    new_section.save()
-
-                cases = self.get_data('cases/{0}&suite_id={1}'.format(
-                    project['id'], suite['id']))
-                for case in cases:
-                    case['created_on'] = timestamp_to_utc(
-                        case.get('created_on'))
-                    case['updated_on'] = timestamp_to_utc(
-                        case.get('updated_on'))
-                    new_case = Cases(**case)
-                    new_case.save()
+            # suites = self.get_data('suites/{0}'.format(project['id']))
+            # for suite in suites:
+            #     app.logger.info('Sync Suite "{0}"'.format(suite.get('name')))
+            #
+            #     suite['completed_on'] = timestamp_to_utc(
+            #         suite.get('completed_on'))
+            #     new_suite = Suites(**suite)
+            #     new_suite.save()
+            #
+            #     sections = self.get_data('sections/{0}&suite_id={1}'.format(
+            #         project['id'], suite['id']))
+            #     for section in sections:
+            #         new_section = Sections(**section)
+            #         new_section.save()
+            #
+            #     cases = self.get_data('cases/{0}&suite_id={1}'.format(
+            #         project['id'], suite['id']))
+            #     for case in cases:
+            #         case['created_on'] = timestamp_to_utc(
+            #             case.get('created_on'))
+            #         case['updated_on'] = timestamp_to_utc(
+            #             case.get('updated_on'))
+            #         new_case = Cases(**case)
+            #         new_case.save()
 
             plan_runs = []
             plans = self.get_data('plans/{0}'.format(project['id']))

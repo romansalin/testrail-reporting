@@ -123,8 +123,8 @@ class Plans(TestRailBaseDocument):
         'url',
     ]
 
-    assignedto_id = db.IntField(required=True, null=True)
-    created_by = db.IntField(required=True, null=True)
+    assignedto_id = db.IntField(null=True)
+    created_by = db.IntField(null=True)
     milestone_id = db.IntField(required=True, null=True)
     project_id = db.IntField(required=True, null=True)
 
@@ -253,7 +253,7 @@ class Runs(TestRailBaseDocument):
         'url',
     ]
 
-    assignedto_id = db.IntField(required=True, null=True)
+    assignedto_id = db.IntField(null=True)
     config = db.StringField(required=True, null=True)
     created_by = db.IntField(required=True, null=True)
     milestone_id = db.IntField(required=True, null=True)
@@ -281,7 +281,7 @@ class Tests(TestRailBaseDocument):
         'case_type',
     ]
 
-    assignedto_id = db.IntField(required=True, null=True)
+    assignedto_id = db.IntField(null=True)
     case_id = db.IntField(required=True, null=True)
     milestone_id = db.IntField(required=True, null=True)
     priority_id = db.IntField(required=True, null=True)
@@ -304,7 +304,7 @@ class Results(TestRailBaseDocument):
         'version',
     ]
 
-    assignedto_id = db.IntField(required=True, null=True)
+    assignedto_id = db.IntField(null=True)
     created_by = db.IntField(required=True, null=True)
     test_id = db.IntField(required=True, null=True)
 

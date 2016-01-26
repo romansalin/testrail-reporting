@@ -212,11 +212,11 @@ class Cases(TestRailBaseDocument):
 
     created_by = db.IntField(null=True)
     milestone_id = db.IntField(null=True)
-    priority_id = db.IntField(required=True, null=True)
-    section_id = db.IntField(required=True, null=True)
+    priority_id = db.IntField(null=True)
+    section_id = db.IntField(null=True)
     suite_id = db.IntField(required=True, null=True)
-    type_id = db.IntField(required=True, null=True)
-    updated_by = db.IntField(required=True, null=True)
+    type_id = db.IntField(null=True)
+    updated_by = db.IntField(null=True)
 
 
 class Runs(TestRailBaseDocument):
@@ -254,12 +254,12 @@ class Runs(TestRailBaseDocument):
     ]
 
     assignedto_id = db.IntField(null=True)
-    config = db.StringField(required=True, null=True)
+    config = db.StringField(null=True)
     created_by = db.IntField(null=True)
     milestone_id = db.IntField(null=True)
-    plan_id = db.IntField(required=True, null=True)
+    plan_id = db.IntField(null=True)
     project_id = db.IntField(required=True, null=True)
-    suite_id = db.IntField(required=True, null=True)
+    suite_id = db.IntField(null=True)
     custom_qa_team = db.StringField(null=True)
 
 
@@ -282,11 +282,11 @@ class Tests(TestRailBaseDocument):
     ]
 
     assignedto_id = db.IntField(null=True)
-    case_id = db.IntField(required=True, null=True)
+    case_id = db.IntField(null=True)
     milestone_id = db.IntField(null=True)
-    priority_id = db.IntField(required=True, null=True)
+    priority_id = db.IntField(null=True)
     run_id = db.IntField(required=True, null=True)
-    type_id = db.IntField(required=True, null=True)
+    type_id = db.IntField(null=True)
 
 
 class Results(TestRailBaseDocument):
@@ -319,14 +319,9 @@ class Syncs(db.Document):
 
 
 class Reports(db.Document):
-    added = db.DateTimeField(default=datetime.now)
-    modified = db.DateTimeField()
+    created = db.DateTimeField(default=datetime.now)
     filename = db.StringField(required=True)
     created_by = db.ReferenceField(AuthUser)
 
     def __unicode__(self):
         return self.filename
-
-    def save(self, **kwargs):
-        self.modified = datetime.now()
-        super(Reports, self).save(**kwargs)

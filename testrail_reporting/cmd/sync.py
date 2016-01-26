@@ -6,8 +6,9 @@ from flask.ext.script import Command
 from testrail_reporting.testrail import testrail_client
 from testrail_reporting.testrail.models import (
     Users, Projects, Milestones, Plans, Suites, Runs, Sections, Cases, Tests,
-    Results, CaseTypes, Statuses, Priorities, Configs)
+    Results, CaseTypes, Statuses, Priorities, Configs, Syncs)
 
+from testrail_reporting.utils import get_now
 from testrail_reporting.utils import timestamp_to_utc
 
 
@@ -27,84 +28,61 @@ class Sync(Command):
             app.logger.error(e.message)
         return data
 
+    def clean_data(self, data, collection):
+        current_users_id = collection.objects.scalar('id')
+        id_to_detele = list(set(current_users_id) -
+                            set(u['id'] for u in data))
+        collection.objects.filter(id__in=id_to_detele).delete()
+
     def run(self):
         app.logger.info('Run TestRail sync...')
+        Syncs(started=get_now()).save()
 
         self.client = testrail_client.TestRailClient(
             app.config['TESTRAIL_BASEURL'],
             app.config['TESTRAIL_USER'],
             app.config['TESTRAIL_PASSWORD'])
 
-        new_users = []
-        new_case_types = []
-        new_statuses = []
-        new_priorities = []
-        new_projects = []
-        new_milestones = []
-        new_configs = []
-        new_suites = []
-        new_cases = []
-        new_sections = []
-        new_plans = []
-        new_runs = []
-        new_tests = []
-        new_results = []
-
         users = self.get_data('users')
+        self.clean_data(users, Users)
         for user in users:
-            new_users.append(Users(**user))
-        Users.objects.delete()
-        if new_users:
-            Users.objects.insert(new_users)
+            new_user = Users(**user)
+            new_user.save()
 
         case_types = self.get_data('case_types')
+        self.clean_data(case_types, CaseTypes)
         for case_type in case_types:
-            new_case_types.append(CaseTypes(**case_type))
-        CaseTypes.objects.delete()
-        if new_case_types:
-            CaseTypes.objects.insert(new_case_types)
+            new_case_type = CaseTypes(**case_type)
+            new_case_type.save()
 
         statuses = self.get_data('statuses')
+        self.clean_data(statuses, Statuses)
         for status in statuses:
-            new_statuses.append(Statuses(**status))
-        Statuses.objects.delete()
-        if new_statuses:
-            Statuses.objects.insert(new_statuses)
+            new_status = Statuses(**status)
+            new_status.save()
 
         priorities = self.get_data('priorities')
+        self.clean_data(priorities, Priorities)
         for priority in priorities:
-            new_priorities.append(Priorities(**priority))
-        Priorities.objects.delete()
-        if new_priorities:
-            Priorities.objects.insert(new_priorities)
+            new_priority = Priorities(**priority)
+            new_priority.save()
 
         projects = self.get_data('projects')
+        self.clean_data(projects, Projects)
         for project in projects:
             app.logger.info('Sync Project "{0}"'.format(project.get('name')))
-            project['completed_on'] = timestamp_to_utc(
-                project.get('completed_on'))
-            new_projects.append(Projects(**project))
-            Projects.objects.delete()
-            if new_projects:
-                Projects.objects.insert(new_projects)
+            new_project = Projects(**project)
+            new_project.save()
 
             milestones = self.get_data('milestones/{0}'.format(project['id']))
             for milestone in milestones:
-                milestone['completed_on'] = timestamp_to_utc(
-                    project.get('completed_on'))
-                milestone['due_on'] = timestamp_to_utc(
-                    milestone.get('due_on'))
-                new_milestones.append(Milestones(**milestone))
-            Milestones.objects.delete()
-            if new_milestones:
-                Milestones.objects.insert(new_milestones)
+                new_milestone = Milestones(**milestone)
+                new_milestone.save()
 
             configs = self.get_data('configs/{0}'.format(project['id']))
             for config in configs:
-                new_configs.append(Configs(**config))
-            Configs.objects.delete()
-            if new_configs:
-                Configs.objects.insert(new_configs)
+                new_config = Configs(**config)
+                new_config.save()
 
             suites = self.get_data('suites/{0}'.format(project['id']))
             for suite in suites:
@@ -112,12 +90,14 @@ class Sync(Command):
 
                 suite['completed_on'] = timestamp_to_utc(
                     suite.get('completed_on'))
-                new_suites.append(Suites(**suite))
+                new_suite = Suites(**suite)
+                new_suite.save()
 
                 sections = self.get_data('sections/{0}&suite_id={1}'.format(
                     project['id'], suite['id']))
                 for section in sections:
-                    new_sections.append(Sections(**section))
+                    new_section = Sections(**section)
+                    new_section.save()
 
                 cases = self.get_data('cases/{0}&suite_id={1}'.format(
                     project['id'], suite['id']))
@@ -126,7 +106,8 @@ class Sync(Command):
                         case.get('created_on'))
                     case['updated_on'] = timestamp_to_utc(
                         case.get('updated_on'))
-                    new_cases.append(Cases(**case))
+                    new_case = Cases(**case)
+                    new_case.save()
 
             plan_runs = []
             plans = self.get_data('plans/{0}'.format(project['id']))
@@ -136,7 +117,8 @@ class Sync(Command):
                 plan['completed_on'] = timestamp_to_utc(
                     plan.get('completed_on'))
                 plan['created_on'] = timestamp_to_utc(plan.get('created_on'))
-                new_plans.append(Plans(**plan))
+                new_plan = Plans(**plan)
+                new_plan.save()
 
                 # repeat request to every plan because entries does't come
                 # from plans/...
@@ -158,47 +140,21 @@ class Sync(Command):
                 run['completed_on'] = timestamp_to_utc(
                     run.get('completed_on'))
                 run['created_on'] = timestamp_to_utc(run.get('created_on'))
-                new_runs.append(Runs(**run))
+                new_runs = Runs(**run)
+                new_runs.save()
 
                 tests = self.get_data('tests/{0}'.format(run['id']))
                 for test in tests:
-                    new_tests.append(Tests(**test))
+                    new_test = Tests(**test)
+                    new_test.save()
 
                 results = self.get_data(
                     'results_for_run/{0}'.format(run['id']))
                 for result in results:
                     result['created_on'] = timestamp_to_utc(
                         result.get('created_on'))
-                    new_results.append(Results(**result))
+                    new_result = Results(**result)
+                    new_result.save()
 
-        app.logger.info('Start saving big objects.')
-
-        Suites.objects.delete()
-        if new_suites:
-            Suites.objects.insert(new_suites)
-
-        Sections.objects.delete()
-        if new_sections:
-            Sections.objects.insert(new_sections)
-
-        Cases.objects.delete()
-        if new_cases:
-            Cases.objects.insert(new_cases)
-
-        Plans.objects.delete()
-        if new_plans:
-            Plans.objects.insert(new_plans)
-
-        Runs.objects.delete()
-        if new_runs:
-            Runs.objects.insert(new_runs)
-
-        Tests.objects.delete()
-        if new_tests:
-            Tests.objects.insert(new_tests)
-
-        Results.objects.delete()
-        if new_results:
-            Results.objects.insert(new_results)
-
+        Syncs.objects.order_by('-id').first().update(finished=get_now())
         app.logger.info('TestRail sync has been finished!')

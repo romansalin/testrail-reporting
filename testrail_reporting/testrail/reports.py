@@ -1,6 +1,7 @@
-from collections import OrderedDict
+from collections import Counter, OrderedDict
 import cStringIO
 from datetime import datetime
+from itertools import chain
 import json
 
 import xlsxwriter
@@ -108,6 +109,7 @@ class MainReport(ExcelReport):
         collections = [Users, CaseTypes, Statuses, Priorities, Projects,
                        Milestones, Plans, Configs, Suites, Cases, Sections,
                        Runs, Tests, Results]
+        limit = 2000
 
         str_io = cStringIO.StringIO()
         workbook = xlsxwriter.Workbook(str_io)
@@ -123,7 +125,10 @@ class MainReport(ExcelReport):
                 worksheet.write(0, col, field, style_bold)
             worksheet.freeze_panes(1, 0)
 
-            documents = collection.objects.no_cache().order_by('id')
+            documents = collection.objects \
+                .limit(limit) \
+                .order_by('id') \
+                .no_cache()
             for row, document in enumerate(documents, start=1):
                 row_data = OrderedDict(document.to_mongo())
                 additional_rows = self.get_replaced_ids(row_data)
@@ -146,9 +151,15 @@ class MainReport(ExcelReport):
                         'Milestone', 'Passed', 'ProdFailed', 'TestFailed',
                         'InfraFailed', 'Skipped', 'Other', 'Failed', 'Blocked',
                         'In progress', 'Fixed', 'Regression', 'Untested']
-        tests = Tests.objects \
-            .only("run_id", "status_id") \
-            .order_by('id') \
+
+        case_teams = Cases.objects.only('id', 'custom_qa_team')
+        case_teams_map = {}
+        for case_team in case_teams:
+            case_teams_map[case_team['id']] = getattr(case_team,
+                                                      'custom_qa_team', None)
+
+        run_tests = Tests.objects \
+            .only('run_id', 'status_id', 'case_id') \
             .aggregate(
                 {
                     "$group": {
@@ -156,6 +167,7 @@ class MainReport(ExcelReport):
                             "run_id": "$run_id",
                             "status_id": "$status_id",
                         },
+                        "cases": {"$push": "$case_id"},
                         "count": {"$sum": 1},
                     },
                 },
@@ -167,44 +179,58 @@ class MainReport(ExcelReport):
                                 "status": "$_id.status_id",
                                 "count": "$count",
                             }
-                        }
+                        },
+                        "cases": {"$push": "$cases"},
                     }
                 },
             )
         tests_map = {}
-        for test in tests:
+        for test in run_tests:
             statuses = {}
             for test_status in test['statuses']:
-                statuses[self.statuses.get(test_status['status'])] = \
-                    test_status['count']
-            if '_id' in test and test['_id']:
-                tests_map[test['_id']] = statuses
+                statuses[self.statuses.get(
+                    test_status['status'])] = test_status['count']
+
+            teams = [case_teams_map.get(t) for t in
+                     list(chain.from_iterable(test['cases']))
+                     if case_teams_map.get(t) is not None]
+
+            team = None
+            try:
+                team = Cases.teams[str(
+                    Counter(teams).most_common(1)[0][0])]
+            except IndexError:
+                pass
+            tests_map[test['_id']] = {
+                'statuses': statuses,
+                'team': team,
+            }
 
         data = []
         runs = Runs.objects \
             .order_by('-id') \
-            .only('custom_qa_team', 'id', 'name', 'config', 'milestone_id')
+            .only('id', 'name', 'config', 'milestone_id')
         for run in runs:
             run_id = run['id']
             if run_id in tests_map:
                 data.append([
-                    run['custom_qa_team'],
+                    tests_map[run_id]['team'],
                     'R{0}'.format(run_id),
-                    run['name'],
-                    run['config'],
-                    self.milestones.get(run['milestone_id']),
-                    tests_map[run_id].get('Passed'),
-                    tests_map[run_id].get('ProdFailed'),
-                    tests_map[run_id].get('TestFailed'),
-                    tests_map[run_id].get('InfraFailed'),
-                    tests_map[run_id].get('Skipped'),
-                    tests_map[run_id].get('Other'),
-                    tests_map[run_id].get('Failed'),
-                    tests_map[run_id].get('Blocked'),
-                    tests_map[run_id].get('In progress'),
-                    tests_map[run_id].get('Fixed'),
-                    tests_map[run_id].get('Regression'),
-                    tests_map[run_id].get('Untested'),
+                    getattr(run, 'name', None),
+                    getattr(run, 'config', None),
+                    self.milestones.get(getattr(run, 'milestone_id', None)),
+                    tests_map[run_id]['statuses'].get('Passed'),
+                    tests_map[run_id]['statuses'].get('ProdFailed'),
+                    tests_map[run_id]['statuses'].get('TestFailed'),
+                    tests_map[run_id]['statuses'].get('InfraFailed'),
+                    tests_map[run_id]['statuses'].get('Skipped'),
+                    tests_map[run_id]['statuses'].get('Other'),
+                    tests_map[run_id]['statuses'].get('Failed'),
+                    tests_map[run_id]['statuses'].get('Blocked'),
+                    tests_map[run_id]['statuses'].get('In progress'),
+                    tests_map[run_id]['statuses'].get('Fixed'),
+                    tests_map[run_id]['statuses'].get('Regression'),
+                    tests_map[run_id]['statuses'].get('Untested'),
                 ]),
 
         for col, field in enumerate(column_names):

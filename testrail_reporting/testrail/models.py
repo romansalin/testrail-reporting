@@ -1,4 +1,10 @@
+from datetime import datetime
+
+from testrail_reporting.auth.models import AuthUser
 from testrail_reporting.extensions import db
+
+from testrail_reporting.utils import get_dt_iso
+from testrail_reporting.utils import timestamp_to_utc
 
 
 class TestRailBaseDocument(db.DynamicDocument):
@@ -59,6 +65,12 @@ class Projects(TestRailBaseDocument):
         'url',
     ]
 
+    completed_on = db.DateTimeField()
+
+    def clean(self):
+        if not isinstance(self.completed_on, datetime):
+            self.completed_on = timestamp_to_utc(self.completed_on)
+
 
 class Milestones(TestRailBaseDocument):
     report_fields = [
@@ -73,6 +85,14 @@ class Milestones(TestRailBaseDocument):
     ]
 
     project_id = db.IntField(required=True, null=True)
+    completed_on = db.DateTimeField()
+    due_on = db.DateTimeField()
+
+    def clean(self):
+        if self.completed_on:
+            self.completed_on = timestamp_to_utc(self.completed_on)
+        if self.due_on:
+            self.due_on = timestamp_to_utc(self.due_on)
 
 
 class Plans(TestRailBaseDocument):
@@ -191,7 +211,7 @@ class Cases(TestRailBaseDocument):
     }
 
     created_by = db.IntField(required=True, null=True)
-    milestone_id = db.IntField(required=True, null=True)
+    milestone_id = db.IntField(null=True)
     priority_id = db.IntField(required=True, null=True)
     section_id = db.IntField(required=True, null=True)
     suite_id = db.IntField(required=True, null=True)
@@ -287,3 +307,26 @@ class Results(TestRailBaseDocument):
     assignedto_id = db.IntField(required=True, null=True)
     created_by = db.IntField(required=True, null=True)
     test_id = db.IntField(required=True, null=True)
+
+
+class Syncs(db.Document):
+    started = db.DateTimeField(required=True)
+    finished = db.DateTimeField()
+
+    def __unicode__(self):
+        return '{0} - {1}'.format(get_dt_iso(self.started),
+                                  get_dt_iso(self.finished) or '...')
+
+
+class Reports(db.Document):
+    added = db.DateTimeField(default=datetime.now)
+    modified = db.DateTimeField()
+    filename = db.StringField(required=True)
+    created_by = db.ReferenceField(AuthUser)
+
+    def __unicode__(self):
+        return self.filename
+
+    def save(self, **kwargs):
+        self.modified = datetime.now()
+        super(Reports, self).save(**kwargs)

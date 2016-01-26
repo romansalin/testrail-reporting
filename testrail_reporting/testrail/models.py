@@ -169,7 +169,26 @@ class Cases(TestRailBaseDocument):
         'case_type',
         'updated_by',
         'updated_on',
+        # Custom fields
+        # TODO(rsalin): get this from get_case_fields
+        'custom_case_complexity',
+        'custom_qa_team',
+        'custom_report_label',
+        'custom_test_case_description',
+        'custom_test_case_steps',
+        'custom_test_group',
     ]
+
+    # TODO(rsalin): get this from get_case_fields
+    teams = {
+        '1': 'Framework-CI',
+        '2': 'Fuel',
+        '3': 'Maintenance',
+        '4': 'MOS',
+        '5': 'Performance',
+        '6': 'PCE',
+        '7': 'Telco',
+    }
 
     created_by = db.IntField(required=True, null=True)
     milestone_id = db.IntField(required=True, null=True)
@@ -212,13 +231,6 @@ class Runs(TestRailBaseDocument):
         'suite',
         'untested_count',
         'url',
-        # Custom fields
-        'custom_case_complexity',
-        'custom_qa_team',
-        'custom_report_label',
-        'custom_test_case_description',
-        'custom_test_case_steps',
-        'custom_test_group',
     ]
 
     assignedto_id = db.IntField(required=True, null=True)
@@ -228,6 +240,7 @@ class Runs(TestRailBaseDocument):
     plan_id = db.IntField(required=True, null=True)
     project_id = db.IntField(required=True, null=True)
     suite_id = db.IntField(required=True, null=True)
+    custom_qa_team = db.StringField(required=True, null=True)
 
 
 class Tests(TestRailBaseDocument):

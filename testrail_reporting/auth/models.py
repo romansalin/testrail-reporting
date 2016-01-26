@@ -12,6 +12,9 @@ class AuthRole(db.Document, RoleMixin):
     name = db.StringField(max_length=80, unique=True)
     description = db.StringField(max_length=255)
 
+    def __unicode__(self):
+        return self.name
+
 
 class AuthUser(db.DynamicDocument, UserMixin):
     id = db.StringField()
@@ -33,3 +36,6 @@ class AuthUser(db.DynamicDocument, UserMixin):
             log.warning("User with google_token {0} "
                         "wasn't found in DB".format(google_token))
         return user
+
+    def __unicode__(self):
+        return '{0} {0} ({1})'.format(self.name, self.family_name, self.email)

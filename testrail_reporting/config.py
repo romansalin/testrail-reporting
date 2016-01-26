@@ -30,6 +30,9 @@ class Config(object):
     # Caching
     CACHING = {'CACHE_TYPE': 'simple'}
 
+    REPORTS_PATH = os.path.join(PROJECT_ROOT, 'testrail_reporting', 'static',
+                                'reports')
+
 
 class ProductionConfig(Config):
     LOGGING_LOCATION = '/var/log/testrail_reporting/testrail_reporting.log'

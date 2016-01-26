@@ -1,17 +1,21 @@
 from collections import Counter, OrderedDict
-import cStringIO
 from datetime import datetime
 from itertools import chain
 import json
+import os
 
+from flask import current_app as app
 import xlsxwriter
 
 from testrail_reporting.testrail.models import (
     Users, Projects, Milestones, Plans, Suites, Runs, Sections, Cases, Tests,
-    Results, CaseTypes, Statuses, Priorities, Configs)
+    Results, CaseTypes, Statuses, Priorities, Configs, Reports)
 
 
 class ExcelReport(object):
+    def __init__(self, filename):
+        self.filename = filename
+
     def calc_column_width(self, val):
         length = 8
         max_length = 60
@@ -21,9 +25,22 @@ class ExcelReport(object):
             length += len(val.encode('ascii', 'ignore'))
         return length if length < max_length else max_length
 
+    def populate(self, workbook):
+        raise NotImplementedError()
+
+    def generate(self):
+        filename = os.path.join(app.config['REPORTS_PATH'], self.filename)
+        workbook = xlsxwriter.Workbook(filename)
+        self.populate(workbook)
+        workbook.close()
+        report = Reports(filename=self.filename)
+        report.save()
+
 
 class MainReport(ExcelReport):
-    def __init__(self):
+    def __init__(self, filename):
+        super(MainReport, self).__init__(filename)
+
         # TODO(rsalin): move to the model and cache for a while
         self.users = {
             d.pk: '{0} ({1})'.format(d.name, d.email)
@@ -104,15 +121,12 @@ class MainReport(ExcelReport):
                 additional_fields.update({k: self.users.get(v)})
         return additional_fields
 
-    def generate_xlsx(self):
+    def populate(self, workbook):
         # TODO(romansalin): refactor to get DRY
         collections = [Users, CaseTypes, Statuses, Priorities, Projects,
                        Milestones, Plans, Configs, Suites, Cases, Sections,
                        Runs, Tests, Results]
         limit = 2000
-
-        str_io = cStringIO.StringIO()
-        workbook = xlsxwriter.Workbook(str_io)
         style_bold = workbook.add_format({'bold': True})
 
         for collection in collections:
@@ -250,6 +264,3 @@ class MainReport(ExcelReport):
                 width = self.calc_column_width(value)
                 worksheet.set_column(col, col, width=width)
                 worksheet.write(row, col, value)
-
-        workbook.close()
-        return str_io.getvalue()

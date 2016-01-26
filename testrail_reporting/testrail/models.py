@@ -210,7 +210,7 @@ class Cases(TestRailBaseDocument):
         '7': 'Telco',
     }
 
-    created_by = db.IntField(required=True, null=True)
+    created_by = db.IntField(null=True)
     milestone_id = db.IntField(null=True)
     priority_id = db.IntField(required=True, null=True)
     section_id = db.IntField(required=True, null=True)
@@ -255,12 +255,12 @@ class Runs(TestRailBaseDocument):
 
     assignedto_id = db.IntField(null=True)
     config = db.StringField(required=True, null=True)
-    created_by = db.IntField(required=True, null=True)
+    created_by = db.IntField(null=True)
     milestone_id = db.IntField(required=True, null=True)
     plan_id = db.IntField(required=True, null=True)
     project_id = db.IntField(required=True, null=True)
     suite_id = db.IntField(required=True, null=True)
-    custom_qa_team = db.StringField(required=True, null=True)
+    custom_qa_team = db.StringField(null=True)
 
 
 class Tests(TestRailBaseDocument):
@@ -305,7 +305,7 @@ class Results(TestRailBaseDocument):
     ]
 
     assignedto_id = db.IntField(null=True)
-    created_by = db.IntField(required=True, null=True)
+    created_by = db.IntField(null=True)
     test_id = db.IntField(required=True, null=True)
 
 

@@ -7,7 +7,7 @@ processes = 4
 threads = 2
 
 vhost = true
-venv = /home/user/testrail-reporting/env
+venv = /home/user/testrail-reporting/.venv
 chdir = /home/user/testrail-reporting
 
 uid = roman.salin

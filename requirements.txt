@@ -1,4 +1,4 @@
-pbr>=0.11,<2.0
+pbr>=0.11
 
 Flask
 Flask-Cache
@@ -9,9 +9,11 @@ Flask-OAuthlib
 Flask-RESTful
 Flask-Script
 Flask-Security
+Flask-Login
+Flask-Principal
+Flask-Mail
 Flask-WTF
 iso8601
 pytz
 requests
-six
 XlsxWriter

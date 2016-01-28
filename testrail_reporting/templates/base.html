@@ -13,8 +13,6 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-<script src="{{ url_for('static', filename='build/bundle.js') }}"></script>
-
 <div id="wrapper">
     {% block header %}{% endblock %}
 
@@ -24,5 +22,7 @@
 
     {% block footer %}{% endblock %}
 </div>
+
+<script src="{{ url_for('static', filename='build/bundle.js') }}"></script>
 </body>
 </html>

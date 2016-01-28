@@ -25,17 +25,11 @@ module.exports = {
       { test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: 'file-loader' }
     ]
   },
-  //devServer: {
-  //  port: 3000,
-  //  contentBase: 'testrail_reporting/static/build',
-  //  hot: true,
-  //  stats: {
-  //    colors: true
-  //  },
-  //  historyApiFallback: false,
-  //  headers: {
-  //    'Access-Control-Allow-Origin': 'http://localhost:3001',
-  //    'Access-Control-Allow-Headers': 'X-Requested-With'
-  //  }
-  //}
+  plugins: [
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+      jQuery: 'jquery',
+      'window.jQuery': 'jquery'
+    })
+  ]
 };

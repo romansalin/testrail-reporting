@@ -56,9 +56,8 @@ class TestRailClient(object):
                 "status_code: {0.status_code}\n"
                 "headers: {0.headers}\n"
                 "content: '{0.content}'".format(response))
-
         result = response.json()
-        if 'error' in result:
+        if result and 'error' in result:
             log.warning(result)
         return result
 

@@ -7,7 +7,6 @@ from testrail_reporting.extensions import oauth
 
 _GOOGLE = None
 _LOCK = threading.Lock()
-GOOGLE_TOKEN = 'google_token'
 
 
 def get_access_token():

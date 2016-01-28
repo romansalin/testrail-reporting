@@ -1,5 +1,3 @@
-import threading
-
 from flask import current_app as app
 from flask.ext.script import Command
 
@@ -8,7 +6,7 @@ from testrail_reporting.testrail.models import (
     Users, Projects, Milestones, Plans, Suites, Runs, Sections, Cases, Tests,
     Results, CaseTypes, Statuses, Priorities, Configs, Syncs)
 
-from testrail_reporting.testrail import reports
+from testrail_reporting.testrail.reports import MainReport
 from testrail_reporting.utils import get_dt_iso
 from testrail_reporting.utils import get_now
 from testrail_reporting.utils import timestamp_to_utc
@@ -39,7 +37,7 @@ class Sync(Command):
     def generate_report(self):
         app.logger.info('Generating report...')
         filename = 'testrail-report-{0}.xlsx'.format(get_dt_iso())
-        report = reports.MainReport(filename)
+        report = MainReport(filename)
         report.generate()
         app.logger.info('Report has been generated!')
 

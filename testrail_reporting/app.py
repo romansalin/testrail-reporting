@@ -1,19 +1,19 @@
 import logging
+from logging import handlers as log_handlers
 import os
 import sys
-from logging import handlers as log_handlers
 
+from flask.ext.security import MongoEngineUserDatastore
 from flask import Flask
 from flask import render_template
-from flask.ext.security import MongoEngineUserDatastore
 
+from testrail_reporting.api import api_bp
+from testrail_reporting.auth import models as auth_models
+from testrail_reporting.auth.views import auth
 from testrail_reporting import config
 from testrail_reporting import extensions as ext
-from testrail_reporting.auth import models as auth_models
 from testrail_reporting.pages.views import pages
 from testrail_reporting.testrail.views import testrail
-from testrail_reporting.auth.views import auth
-from testrail_reporting.api import api_bp
 
 
 log = logging.getLogger(__name__)

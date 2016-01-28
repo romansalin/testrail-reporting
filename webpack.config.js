@@ -1,15 +1,21 @@
 var path = require('path');
 var webpack = require('webpack');
+var production = process.env.NODE_ENV === 'production';
 
-module.exports = {
-  debug: process.env.NODE_ENV !== 'production',
-  entry: path.resolve(__dirname, 'testrail_reporting/static/js/app.js'),
+var config = {
+  // for faster builds use 'eval'
+  devtool: 'source-map',
+  debug: true,
+  entry: {
+    main: path.resolve(__dirname, 'testrail_reporting/static/js/app.jsx')
+  },
   output: {
     path: path.resolve(__dirname, 'testrail_reporting/static/build'),
     filename: 'bundle.js'
   },
   resolve: {
-    modulesDirectories: ['node_modules', 'testrail_reporting/static/js']
+    modulesDirectories: ['node_modules', 'testrail_reporting/static/js'],
+    extensions: ['', '.js', '.jsx']
   },
   module: {
     loaders: [
@@ -33,3 +39,17 @@ module.exports = {
     })
   ]
 };
+
+if (production) {
+  config.devtool = null;
+  config.debug = false;
+
+  config.plugins.push(
+    new webpack.optimize.DedupePlugin(),
+    new webpack.optimize.UglifyJsPlugin({
+      minimize: true
+    })
+  );
+}
+
+module.exports = config;

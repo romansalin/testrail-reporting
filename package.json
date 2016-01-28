@@ -3,10 +3,8 @@
   "version": "0.1.0",
   "description": "Web App that lets you build custom reports for TestRail",
   "private": true,
-  "main": "testrail_reporting/static/js/app.js",
   "repository": "none",
   "scripts": {
-    "start": "webpack-dev-server",
     "build": "NODE_ENV=production webpack --progress --colors",
     "watch": "webpack --progress --colors --devtool sourcemap --watch",
     "test": "echo \"Error: no test specified\" && exit 1",

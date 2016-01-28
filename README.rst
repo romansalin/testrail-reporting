@@ -39,7 +39,7 @@ Development Environment
 .. code-block:: shell
 
     $ npm install
-    $ npm run build
+    $ npm run watch
 
 4. Make sure that MongoDB is running:
 

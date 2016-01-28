@@ -103,7 +103,6 @@ class Plans(TestRailBaseDocument):
         'completed_on',
         'created_by',
         'created_on',
-        # TODO make it dynamic (regexp?)
         'custom_status1_count',
         'custom_status2_count',
         'custom_status3_count',

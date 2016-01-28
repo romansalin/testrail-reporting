@@ -12,7 +12,7 @@ manager.add_option('-c', '--config',
                    help='configuration (development, testing or production)',
                    required=False)
 
-manager.add_command('runserver', Server(host='127.0.0.1', port=9000))
+manager.add_command('runserver', Server(host='127.0.0.1'))
 manager.add_command('sync', Sync())
 
 

@@ -97,7 +97,7 @@ def configure_api_endpoints():
 
 
 def create_app(config_name='development'):
-    app = Flask(__name__)
+    app = Flask(__name__, static_url_path='')
 
     configure_app(app, config_name)
     configure_logging(app)

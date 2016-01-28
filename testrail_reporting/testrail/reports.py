@@ -21,7 +21,7 @@ class ExcelReport(object):
         max_length = 60
         if isinstance(val, int):
             length += len(str(val))
-        elif isinstance(val, basestring):
+        elif isinstance(val, str):
             length += len(val.encode('ascii', 'ignore'))
         return length if length < max_length else max_length
 

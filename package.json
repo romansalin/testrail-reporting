@@ -3,14 +3,13 @@
   "version": "0.1.0",
   "description": "Web App that lets you build custom reports for TestRail",
   "private": true,
-  "main": "testrail_reporting/static/js/app.js",
   "repository": "none",
-  "license": "Apache 2.0",
   "scripts": {
     "build": "NODE_ENV=production webpack --progress --colors",
     "watch": "webpack --progress --colors --devtool sourcemap --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint testrail_reporting/static"
+    "lint": "eslint --ext js,jsx testrail_reporting/static/js",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "babel": "^6.3.26",
@@ -45,8 +44,10 @@
     "file-loader": "^0.8.5",
     "json-loader": "^0.5.4",
     "less-loader": "^2.2.2",
+    "react-hot-loader": "^1.3.0",
     "style-loader": "^0.13.0",
     "url-loader": "^0.5.7",
-    "webpack": "^1.12.10"
+    "webpack": "^1.12.10",
+    "webpack-dev-server": "^1.14.1"
   }
 }

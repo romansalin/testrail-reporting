@@ -8,7 +8,7 @@ Requirements
 
 You will need the following things properly installed on your machine:
 
-* Python 2.7
+* Python 3.5
 * MongoDB
 * Node.js (with NPM)
 
@@ -47,7 +47,7 @@ Development Environment
 
     $ sudo service mongodb start
 
-5. Create local configuration file in `/etc/testrail_reporting/testrail_reporting.conf` 
+5. Create local configuration file in `/etc/testrail_reporting/testrail_reporting.conf`
    or `~/testrail_reporting.conf` and populate it with Google and TestRail
    credentials. If you want to create your own credentials for Google oauth,
    go to https://console.developers.google.com "APIs & Auth" -> Credentials
@@ -77,3 +77,4 @@ To run tests and linters:
 
     $ pip install tox
     $ tox
+    $ npm run lint

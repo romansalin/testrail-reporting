@@ -9,6 +9,10 @@ server {
     access_log  /var/log/nginx/testrail-reporting-access.log;
     error_log   /var/log/nginx/testrail-reporting-error.log;
 
+    location /static {
+        alias /home/user/testrail-reporting/testrail_reporting/static;
+    }
+
     location / {
         include uwsgi_params;
         uwsgi_pass unix:/run/testrail_reporting/testrail_reporting.sock;

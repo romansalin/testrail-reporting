@@ -77,3 +77,4 @@ To run tests and linters:
 
     $ pip install tox
     $ tox
+    $ npm run lint

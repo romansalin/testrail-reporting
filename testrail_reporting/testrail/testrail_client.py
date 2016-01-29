@@ -5,6 +5,7 @@
 # http://docs.gurock.com/testrail-api2/accessing
 
 import logging
+import time
 
 import requests
 
@@ -18,6 +19,7 @@ class TestRailClient(object):
         self.__url = base_url + 'index.php?/api/v2/'
         self.user = user
         self.password = password
+        self.default_delay = 10
 
     def send_get(self, uri):
         """Send Get.
@@ -50,12 +52,22 @@ class TestRailClient(object):
         log.debug('Request: {0} {1}'.format(method, url))
         response = requests.request(method, url, allow_redirects=False,
                                     **kwargs)
+
+        if response.status_code == 429:  # Too Many Requests
+            delay = int(response.headers.get('Retry-After')) \
+                    or self.default_delay
+            log.warning('Too Many Requests. Request will be retried after {0} '
+                        'seconds'.format(str(delay)))
+            time.sleep(delay)
+            self.__send_request(method, uri, **kwargs)
+
         if response.status_code >= 300:
             raise APIError(
                 "Wrong response from TestRail API:\n"
                 "status_code: {0.status_code}\n"
                 "headers: {0.headers}\n"
                 "content: '{0.content}'".format(response))
+
         result = response.json()
         if result and 'error' in result:
             log.warning(result)

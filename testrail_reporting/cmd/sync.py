@@ -89,59 +89,60 @@ class Sync(Command):
                 new_config = Configs(**config)
                 new_config.save()
 
-            # suites = self.get_data('suites/{0}'.format(project['id']))
-            # for suite in suites:
-            #     app.logger.info('Sync Suite "{0}"'.format(suite.get('name')))
-            #     new_suite = Suites(**suite)
-            #     new_suite.save()
-            #
-            #     sections = self.get_data('sections/{0}&suite_id={1}'.format(
-            #         project['id'], suite['id']))
-            #     for section in sections:
-            #         new_section = Sections(**section)
-            #         new_section.save()
-            #
-            #     cases = self.get_data('cases/{0}&suite_id={1}'.format(
-            #         project['id'], suite['id']))
-            #         new_case = Cases(**case)
-            #         new_case.save()
-            #
-            # plan_runs = []
-            # plans = self.get_data('plans/{0}'.format(project['id']))
-            # for plan in plans:
-            #     app.logger.info('Sync Plan "{0}"'.format(plan.get('name')))
-            #     new_plan = Plans(**plan)
-            #     new_plan.save()
-            #
-            #     # repeat request to every plan because entries does't come
-            #     # from plans/...
-            #     plan_entries = self.get_data(
-            #         'plan/{0}'.format(plan['id'])).get('entries', [])
-            #     for entry in plan_entries:
-            #         for run in entry['runs']:
-            #             run.update({
-            #                 'config': entry.get('name'),
-            #                 'suite_id': entry.get('suite_id'),
-            #             })
-            #             plan_runs.append(run)
-            #
-            # runs = self.get_data('runs/{0}'.format(project['id']))
-            # all_runs = plan_runs + runs
-            # for run in all_runs:
-            #     app.logger.info('Sync Run "{0}"'.format(run.get('name')))
-            #     new_runs = Runs(**run)
-            #     new_runs.save()
-            #
-            #     tests = self.get_data('tests/{0}'.format(run['id']))
-            #     for test in tests:
-            #         new_test = Tests(**test)
-            #         new_test.save()
-            #
-            #     results = self.get_data(
-            #         'results_for_run/{0}'.format(run['id']))
-            #     for result in results:
-            #         new_result = Results(**result)
-            #         new_result.save()
+            suites = self.get_data('suites/{0}'.format(project['id']))
+            for suite in suites:
+                app.logger.info('Sync Suite "{0}"'.format(suite.get('name')))
+                new_suite = Suites(**suite)
+                new_suite.save()
+
+                sections = self.get_data('sections/{0}&suite_id={1}'.format(
+                    project['id'], suite['id']))
+                for section in sections:
+                    new_section = Sections(**section)
+                    new_section.save()
+
+                cases = self.get_data('cases/{0}&suite_id={1}'.format(
+                    project['id'], suite['id']))
+                for case in cases:
+                    new_case = Cases(**case)
+                    new_case.save()
+
+            plan_runs = []
+            plans = self.get_data('plans/{0}'.format(project['id']))
+            for plan in plans:
+                app.logger.info('Sync Plan "{0}"'.format(plan.get('name')))
+                new_plan = Plans(**plan)
+                new_plan.save()
+
+                # repeat request to every plan because entries does't come
+                # from plans/...
+                plan_entries = self.get_data(
+                    'plan/{0}'.format(plan['id'])).get('entries', [])
+                for entry in plan_entries:
+                    for run in entry['runs']:
+                        run.update({
+                            'config': entry.get('name'),
+                            'suite_id': entry.get('suite_id'),
+                        })
+                        plan_runs.append(run)
+
+            runs = self.get_data('runs/{0}'.format(project['id']))
+            all_runs = plan_runs + runs
+            for run in all_runs:
+                app.logger.info('Sync Run "{0}"'.format(run.get('name')))
+                new_runs = Runs(**run)
+                new_runs.save()
+
+                tests = self.get_data('tests/{0}'.format(run['id']))
+                for test in tests:
+                    new_test = Tests(**test)
+                    new_test.save()
+
+                results = self.get_data(
+                    'results_for_run/{0}'.format(run['id']))
+                for result in results:
+                    new_result = Results(**result)
+                    new_result.save()
 
         Syncs.objects.order_by('-id').first().update(finished=get_now())
         app.logger.info('TestRail sync has been finished!')

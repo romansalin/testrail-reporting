@@ -7,10 +7,11 @@ def get_now():
     return datetime.now(tz=pytz.utc)
 
 
-def timestamp_to_utc(timestamp):
-    if not timestamp:
+def timestamp_to_dt(timestamp):
+    try:
+        return datetime.fromtimestamp(float(timestamp), tz=pytz.utc)
+    except (ValueError, TypeError):
         return None
-    return datetime.fromtimestamp(timestamp, tz=pytz.utc)
 
 
 def get_dt_iso(dt=datetime.now(), sep='T'):

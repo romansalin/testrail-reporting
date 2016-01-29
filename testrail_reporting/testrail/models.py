@@ -1,37 +1,34 @@
+from bson import DBRef
 from datetime import datetime
 
 from mongoengine import *
 
 from testrail_reporting.auth.models import AuthUser
 from testrail_reporting.utils import get_dt_iso
-from testrail_reporting.utils import timestamp_to_utc
+from testrail_reporting.utils import timestamp_to_dt
 
 
 class TestRailDocument(DynamicDocument):
-    tr_id = IntField(unique=True)
+    id = IntField(primary_key=True)
 
     meta = {
         'abstract': True,
     }
 
     def __str__(self):
-        val = str(self.tr_id)
         if hasattr(self, 'name'):
-            val = '{0}: {1}'.format(val, self.name)
+            return self.name
         elif hasattr(self, 'title'):
-            val = '{0}: {1}'.format(val, self.title)
-        return val
+            return self.title
+        return str(self.id)
 
-    def save(self, *args, **kwargs):
-        # mongoengine doesn't allow "id" field with integer value.
-        # It would be possible to declare it as primary_key, but then it's
-        # not possible to have ReferenceField while it's not
-        # bson.ObjectId()
-        tr_id = getattr(self, 'id', None)
-        if tr_id:
-            setattr(self, 'tr_id', tr_id)
-            delattr(self, 'id')
-        super(TestRailDocument, self).save(*args, **kwargs)
+    def clean(self):
+        for field_name, field_type in self._fields.items():
+            field_value = getattr(self, field_name)
+            if isinstance(field_type, ReferenceField):
+                collection = field_type.document_type_obj.__name__
+                ref = DBRef(collection, field_value)
+                setattr(self, field_name, ref)
 
 
 class Users(TestRailDocument):
@@ -87,8 +84,9 @@ class Projects(TestRailDocument):
     completed_on = DateTimeField()
 
     def clean(self):
-        if not isinstance(self.completed_on, datetime):
-            self.completed_on = timestamp_to_utc(self.completed_on)
+        super(Projects, self).clean()
+        if self.completed_on:
+            self.completed_on = timestamp_to_dt(self.completed_on)
 
 
 class Milestones(TestRailDocument):
@@ -103,15 +101,16 @@ class Milestones(TestRailDocument):
         'url',
     ]
 
-    project_id = IntField(required=True, null=True)
+    project_id = ReferenceField(Projects, reverse_delete_rule=2, required=True)
     completed_on = DateTimeField()
     due_on = DateTimeField()
 
     def clean(self):
+        super(Milestones, self).clean()
         if self.completed_on:
-            self.completed_on = timestamp_to_utc(self.completed_on)
+            self.completed_on = timestamp_to_dt(self.completed_on)
         if self.due_on:
-            self.due_on = timestamp_to_utc(self.due_on)
+            self.due_on = timestamp_to_dt(self.due_on)
 
 
 class Plans(TestRailDocument):
@@ -141,18 +140,19 @@ class Plans(TestRailDocument):
         'url',
     ]
 
-    assignedto_id = IntField(null=True)
+    assignedto_id = ReferenceField(Users, reverse_delete_rule=1, null=True)
+    created_by = ReferenceField(Users, reverse_delete_rule=1, null=True)
+    milestone_id = ReferenceField(Milestones, reverse_delete_rule=1, null=True)
+    project_id = ReferenceField(Projects, reverse_delete_rule=2, required=True)
     created_on = DateTimeField()
     completed_on = DateTimeField()
-    created_by = IntField(null=True)
-    milestone_id = IntField(null=True)
-    project_id = IntField(required=True, null=True)
 
     def clean(self):
+        super(Plans, self).clean()
         if self.created_on:
-            self.created_on = timestamp_to_utc(self.created_on)
+            self.created_on = timestamp_to_dt(self.created_on)
         if self.completed_on:
-            self.completed_on = timestamp_to_utc(self.completed_on)
+            self.completed_on = timestamp_to_dt(self.completed_on)
 
 
 class Configs(TestRailDocument):
@@ -163,7 +163,7 @@ class Configs(TestRailDocument):
         'project',
     ]
 
-    project_id = IntField(required=True, null=True)
+    project_id = ReferenceField(Projects, reverse_delete_rule=2, required=True)
 
 
 class Suites(TestRailDocument):
@@ -179,12 +179,13 @@ class Suites(TestRailDocument):
         'url',
     ]
 
-    project_id = IntField(required=True, null=True)
+    project_id = ReferenceField(Projects, reverse_delete_rule=2, required=True)
     completed_on = DateTimeField()
 
     def clean(self):
+        super(Suites, self).clean()
         if self.completed_on:
-            self.completed_on = timestamp_to_utc(self.completed_on)
+            self.completed_on = timestamp_to_dt(self.completed_on)
 
 
 class Sections(TestRailDocument):
@@ -199,7 +200,7 @@ class Sections(TestRailDocument):
         'suite',
     ]
 
-    suite_id = IntField(required=True, null=True)
+    suite_id = ReferenceField(Suites, reverse_delete_rule=2, required=True)
 
 
 class Cases(TestRailDocument):
@@ -241,21 +242,22 @@ class Cases(TestRailDocument):
         '7': 'Telco',
     }
 
-    created_by = IntField(null=True)
+    created_by = ReferenceField(Users, reverse_delete_rule=1, null=True)
+    milestone_id = ReferenceField(Milestones, reverse_delete_rule=1, null=True)
+    priority_id = ReferenceField(Priorities, reverse_delete_rule=1, null=True)
+    section_id = ReferenceField(Sections, reverse_delete_rule=1, null=True)
+    suite_id = ReferenceField(Suites, reverse_delete_rule=2, required=True)
+    type_id = ReferenceField(CaseTypes, reverse_delete_rule=1, null=True)
+    updated_by = ReferenceField(Users, reverse_delete_rule=1, null=True)
     created_on = DateTimeField()
-    milestone_id = IntField(null=True)
-    priority_id = IntField(null=True)
-    section_id = IntField(null=True)
-    suite_id = IntField(required=True, null=True)
-    type_id = IntField(null=True)
-    updated_by = IntField(null=True)
     updated_on = DateTimeField()
 
     def clean(self):
+        super(Cases, self).clean()
         if self.created_on:
-            self.created_on = timestamp_to_utc(self.created_on)
+            self.created_on = timestamp_to_dt(self.created_on)
         if self.updated_on:
-            self.updated_on = timestamp_to_utc(self.updated_on)
+            self.updated_on = timestamp_to_dt(self.updated_on)
 
 
 class Runs(TestRailDocument):
@@ -292,22 +294,23 @@ class Runs(TestRailDocument):
         'url',
     ]
 
-    assignedto_id = IntField(null=True)
-    config = StringField(null=True)
-    created_by = IntField(null=True)
+    assignedto_id = ReferenceField(Users, reverse_delete_rule=1, null=True)
+    created_by = ReferenceField(Users, reverse_delete_rule=1, null=True)
+    milestone_id = ReferenceField(Milestones, reverse_delete_rule=1, null=True)
+    plan_id = ReferenceField(Plans, reverse_delete_rule=1, null=True)
+    project_id = ReferenceField(Projects, reverse_delete_rule=2, required=True)
+    suite_id = ReferenceField(Suites, reverse_delete_rule=1, null=True)
     created_on = DateTimeField()
     completed_on = DateTimeField()
-    milestone_id = IntField(null=True)
-    plan_id = IntField(null=True)
-    project_id = IntField(required=True, null=True)
-    suite_id = IntField(null=True)
+
     custom_qa_team = StringField(null=True)
 
     def clean(self):
+        super(Runs, self).clean()
         if self.created_on:
-            self.created_on = timestamp_to_utc(self.created_on)
+            self.created_on = timestamp_to_dt(self.created_on)
         if self.completed_on:
-            self.completed_on = timestamp_to_utc(self.completed_on)
+            self.completed_on = timestamp_to_dt(self.completed_on)
 
 
 class Tests(TestRailDocument):
@@ -328,12 +331,12 @@ class Tests(TestRailDocument):
         'case_type',
     ]
 
-    assignedto_id = IntField(null=True)
-    case_id = IntField(null=True)
-    milestone_id = IntField(null=True)
-    priority_id = IntField(null=True)
-    run_id = IntField(required=True, null=True)
-    type_id = IntField(null=True)
+    assignedto_id = ReferenceField(Users, reverse_delete_rule=1, null=True)
+    case_id = ReferenceField(Cases, reverse_delete_rule=1, null=True)
+    milestone_id = ReferenceField(Milestones, reverse_delete_rule=1, null=True)
+    priority_id = ReferenceField(Priorities, reverse_delete_rule=1, null=True)
+    run_id = ReferenceField(Runs, reverse_delete_rule=2, required=True)
+    type_id = ReferenceField(CaseTypes, reverse_delete_rule=1, null=True)
 
 
 class Results(TestRailDocument):
@@ -351,14 +354,15 @@ class Results(TestRailDocument):
         'version',
     ]
 
-    assignedto_id = IntField(null=True)
-    created_by = IntField(null=True)
+    assignedto_id = ReferenceField(Users, reverse_delete_rule=1, null=True)
+    created_by = ReferenceField(Users, reverse_delete_rule=1, null=True)
+    test_id = ReferenceField(Tests, reverse_delete_rule=2, required=True)
     created_on = DateTimeField()
-    test_id = IntField(required=True, null=True)
 
     def clean(self):
+        super(Results, self).clean()
         if self.created_on:
-            self.created_on = timestamp_to_utc(self.created_on)
+            self.created_on = timestamp_to_dt(self.created_on)
 
 
 class Syncs(Document):
@@ -373,7 +377,7 @@ class Syncs(Document):
 class Reports(Document):
     created = DateTimeField(default=datetime.now)
     filename = StringField(required=True)
-    created_by = ReferenceField(AuthUser)
+    created_by = ReferenceField(AuthUser, reverse_delete_rule=1, null=True)
 
     def __str__(self):
         return self.filename

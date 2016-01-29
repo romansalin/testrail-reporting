@@ -9,7 +9,6 @@ from testrail_reporting.testrail.models import (
 from testrail_reporting.testrail.reports import MainReport
 from testrail_reporting.utils import get_dt_iso
 from testrail_reporting.utils import get_now
-from testrail_reporting.utils import timestamp_to_utc
 
 
 # TODO(rsalin): threading (producer-consumer)
@@ -30,8 +29,7 @@ class Sync(Command):
 
     def clean_data(self, data, collection):
         current_users_id = collection.objects.scalar('id')
-        id_to_detele = list(set(current_users_id) -
-                            set(u['id'] for u in data))
+        id_to_detele = list(set(current_users_id) - set(u['id'] for u in data))
         collection.objects.filter(id__in=id_to_detele).delete()
 
     def generate_report(self):
@@ -94,9 +92,6 @@ class Sync(Command):
             suites = self.get_data('suites/{0}'.format(project['id']))
             for suite in suites:
                 app.logger.info('Sync Suite "{0}"'.format(suite.get('name')))
-
-                suite['completed_on'] = timestamp_to_utc(
-                    suite.get('completed_on'))
                 new_suite = Suites(**suite)
                 new_suite.save()
 
@@ -109,10 +104,6 @@ class Sync(Command):
                 cases = self.get_data('cases/{0}&suite_id={1}'.format(
                     project['id'], suite['id']))
                 for case in cases:
-                    case['created_on'] = timestamp_to_utc(
-                        case.get('created_on'))
-                    case['updated_on'] = timestamp_to_utc(
-                        case.get('updated_on'))
                     new_case = Cases(**case)
                     new_case.save()
 
@@ -120,10 +111,6 @@ class Sync(Command):
             plans = self.get_data('plans/{0}'.format(project['id']))
             for plan in plans:
                 app.logger.info('Sync Plan "{0}"'.format(plan.get('name')))
-
-                plan['completed_on'] = timestamp_to_utc(
-                    plan.get('completed_on'))
-                plan['created_on'] = timestamp_to_utc(plan.get('created_on'))
                 new_plan = Plans(**plan)
                 new_plan.save()
 
@@ -143,10 +130,6 @@ class Sync(Command):
             all_runs = plan_runs + runs
             for run in all_runs:
                 app.logger.info('Sync Run "{0}"'.format(run.get('name')))
-
-                run['completed_on'] = timestamp_to_utc(
-                    run.get('completed_on'))
-                run['created_on'] = timestamp_to_utc(run.get('created_on'))
                 new_runs = Runs(**run)
                 new_runs.save()
 
@@ -158,8 +141,6 @@ class Sync(Command):
                 results = self.get_data(
                     'results_for_run/{0}'.format(run['id']))
                 for result in results:
-                    result['created_on'] = timestamp_to_utc(
-                        result.get('created_on'))
                     new_result = Results(**result)
                     new_result.save()
 

@@ -1,33 +1,33 @@
 import logging
 
+from mongoengine import *
+
 from flask.ext.security import RoleMixin
 from flask.ext.security import UserMixin
-
-from testrail_reporting.extensions import db
 
 log = logging.getLogger(__name__)
 
 
-class AuthRole(db.Document, RoleMixin):
-    name = db.StringField(max_length=80, unique=True)
-    description = db.StringField(max_length=255)
+class AuthRole(Document, RoleMixin):
+    name = StringField(max_length=80, unique=True)
+    description = StringField(max_length=255)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
-class AuthUser(db.DynamicDocument, UserMixin):
-    id = db.StringField()
-    email = db.StringField(max_length=255)
-    password = db.StringField(max_length=255)
-    name = db.StringField()
-    family_name = db.StringField()
-    given_name = db.StringField()
-    picture = db.StringField()
-    hd = db.StringField()
-    verified_email = db.BooleanField()
-    google_token = db.StringField()
-    roles = db.ListField(db.ReferenceField(AuthRole), default=[])
+class AuthUser(DynamicDocument, UserMixin):
+    id = StringField()
+    email = StringField(max_length=255)
+    password = StringField(max_length=255)
+    name = StringField()
+    family_name = StringField()
+    given_name = StringField()
+    picture = StringField()
+    hd = StringField()
+    verified_email = BooleanField()
+    google_token = StringField()
+    roles = ListField(ReferenceField(AuthRole), default=[])
 
     @classmethod
     def get_current_user(cls, google_token):
@@ -37,5 +37,5 @@ class AuthUser(db.DynamicDocument, UserMixin):
                         "wasn't found in DB".format(google_token))
         return user
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0} {0} ({1})'.format(self.name, self.family_name, self.email)

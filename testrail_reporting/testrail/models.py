@@ -1,6 +1,6 @@
-from bson import DBRef
 from datetime import datetime
 
+from bson import DBRef
 from mongoengine import *
 
 from testrail_reporting.auth.models import AuthUser

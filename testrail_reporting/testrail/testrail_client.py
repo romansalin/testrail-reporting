@@ -55,7 +55,7 @@ class TestRailClient(object):
 
         if response.status_code == 429:  # Too Many Requests
             delay = int(response.headers.get('Retry-After')) \
-                    or self.default_delay
+                or self.default_delay
             log.warning('Too Many Requests. Request will be retried after {0} '
                         'seconds'.format(str(delay)))
             time.sleep(delay)

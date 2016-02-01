@@ -3,6 +3,7 @@ from collections import OrderedDict
 from datetime import datetime
 from itertools import chain
 import json
+import logging
 import os
 
 from flask import current_app as app
@@ -12,12 +13,14 @@ from testrail_reporting.testrail.models import (
     Users, Projects, Milestones, Plans, Suites, Runs, Sections, Cases, Tests,
     Results, CaseTypes, Statuses, Priorities, Configs, Reports)
 
+log = logging.getLogger(__name__)
+
 
 class ExcelReport(object):
     def __init__(self, filename):
         self.filename = filename
 
-    def calc_column_width(self, val):
+    def _calc_column_width(self, val):
         length = 8
         max_length = 60
         if isinstance(val, int):
@@ -26,23 +29,47 @@ class ExcelReport(object):
             length += len(val.encode('ascii', 'ignore'))
         return length if length < max_length else max_length
 
-    def populate(self, workbook):
+    def _build_worksheet(self, workbook, title, field_names, data):
+        style_bold = workbook.add_format({'bold': True})
+        worksheet = workbook.add_worksheet(title)
+        for col, field in enumerate(field_names):
+            width = self._calc_column_width(field)
+            worksheet.set_column(col, col, width=width)
+            worksheet.write(0, col, field, style_bold)
+        worksheet.freeze_panes(1, 0)
+
+        for row, record in enumerate(data, start=1):
+            for col, field in enumerate(record):
+                value = field
+                if isinstance(value, datetime):
+                    value = value.isoformat()
+                elif isinstance(value, list):
+                    value = json.dumps(value)
+                width = self._calc_column_width(value)
+                worksheet.set_column(col, col, width=width)
+                worksheet.write(row, col, value)
+
+    def build_workbook(self, workbook):
         raise NotImplementedError()
 
     def generate(self):
+        log.info('Generating report...')
         filename = os.path.join(app.config['REPORTS_PATH'], self.filename)
         workbook = xlsxwriter.Workbook(filename)
-        self.populate(workbook)
+        self.build_workbook(workbook)
         workbook.close()
+
         report = Reports(filename=self.filename)
         report.save()
+        log.info('Report %s has been generated!', filename)
+        return report
 
 
 class MainReport(ExcelReport):
     def __init__(self, filename):
         super(MainReport, self).__init__(filename)
 
-        # TODO(rsalin): move to the model and cache for a while
+        # TODO(rsalin): getting cached data via API
         self.users = {
             d.pk: '{0} ({1})'.format(d.name, d.email)
             for d in Users.objects.no_cache().only('id', 'name', 'email')}
@@ -63,35 +90,15 @@ class MainReport(ExcelReport):
             d.pk: d.name
             for d in Priorities.objects.no_cache().only('id', 'name')}
 
-        self.sections = {
-            d.pk: d.name
-            for d in Sections.objects.no_cache().only('id', 'name')}
-
         self.case_types = {
             d.pk: d.name
             for d in CaseTypes.objects.no_cache().only('id', 'name')}
-
-        self.plans = {
-            d.pk: d.name
-            for d in Plans.objects.no_cache().only('id', 'name')}
 
         self.statuses = {
             d.pk: d.label
             for d in Statuses.objects.no_cache().only('id', 'label')}
 
-        self.cases = {
-            d.pk: d.title
-            for d in Cases.objects.no_cache().only('id', 'title')}
-
-        self.runs = {
-            d.pk: d.name
-            for d in Runs.objects.no_cache().only('id', 'name')}
-
-        self.tests = {
-            d.pk: d.title
-            for d in Tests.objects.no_cache().only('id', 'title')}
-
-    def get_replaced_ids(self, row_data):
+    def _get_replaced_ids(self, row_data):
         additional_fields = OrderedDict()
         for k, v in row_data.items():
             if k == 'project_id':
@@ -104,68 +111,47 @@ class MainReport(ExcelReport):
                 additional_fields.update({'suite': self.suites.get(v)})
             elif k == 'priority_id':
                 additional_fields.update({'priority': self.priorities.get(v)})
-            elif k == 'section_id':
-                additional_fields.update({'section': self.sections.get(v)})
             elif k == 'type_id':
                 additional_fields.update({'case_type': self.case_types.get(v)})
-            elif k == 'plan_id':
-                additional_fields.update({'plan': self.plans.get(v)})
             elif k == 'status_id':
                 additional_fields.update({'status': self.statuses.get(v)})
-            elif k == 'case_id':
-                additional_fields.update({'case': self.cases.get(v)})
-            elif k == 'run_id':
-                additional_fields.update({'run': self.runs.get(v)})
-            elif k == 'test_id':
-                additional_fields.update({'test': self.tests.get(v)})
             elif k == 'created_by' or k == 'updated_by':
                 additional_fields.update({k: self.users.get(v)})
         return additional_fields
 
-    def populate(self, workbook):
-        # TODO(romansalin): refactor to get DRY
+    def _build_data_sheets(self, workbook):
         collections = [Users, CaseTypes, Statuses, Priorities, Projects,
                        Milestones, Plans, Configs, Suites, Cases, Sections,
                        Runs, Tests, Results]
-        limit = 2000
-        style_bold = workbook.add_format({'bold': True})
+        limit = 1000
 
         for collection in collections:
-            worksheet = workbook.add_worksheet(collection.__name__)
-            report_fields = collection.report_fields
-
-            for col, field in enumerate(report_fields):
-                width = self.calc_column_width(field)
-                worksheet.set_column(col, col, width=width)
-                worksheet.write(0, col, field, style_bold)
-            worksheet.freeze_panes(1, 0)
-
+            field_names = collection.report_fields
             documents = collection.objects \
                 .limit(limit) \
                 .order_by('id') \
                 .no_cache()
-            for row, document in enumerate(documents, start=1):
-                row_data = OrderedDict(document.to_mongo())
-                additional_rows = self.get_replaced_ids(row_data)
-                row_data.update(additional_rows)
+            data = []
+            for document in documents:
+                row_data = []
+                row_data_map = OrderedDict(document.to_mongo())
+                additional_rows = self._get_replaced_ids(row_data_map)
+                row_data_map.update(additional_rows)
+                for field in field_names:
+                    value = row_data_map.get(field)
+                    row_data.append(value)
+                data.append(row_data)
 
-                for col, field in enumerate(report_fields):
-                    value = row_data.get(field)
-                    if isinstance(value, datetime):
-                        value = value.isoformat()
-                    elif isinstance(value, list):
-                        value = json.dumps(value)
+            self._build_worksheet(workbook,
+                                  collection.__name__,
+                                  field_names,
+                                  data)
 
-                    width = self.calc_column_width(value)
-                    worksheet.set_column(col, col, width=width)
-                    worksheet.write(row, col, value)
-
-        # Test runs report
-        worksheet = workbook.add_worksheet('Test Runs Report')
-        column_names = ['QA team', 'Run ID', 'Run', 'Run Configuration',
-                        'Milestone', 'Passed', 'ProdFailed', 'TestFailed',
-                        'InfraFailed', 'Skipped', 'Other', 'Failed', 'Blocked',
-                        'In progress', 'Fixed', 'Regression', 'Untested']
+    def _build_test_runs_sheet(self, workbook):
+        field_names = ['QA team', 'Run ID', 'Run', 'Run Configuration',
+                       'Milestone', 'Passed', 'ProdFailed', 'TestFailed',
+                       'InfraFailed', 'Skipped', 'Other', 'Failed', 'Blocked',
+                       'In progress', 'Fixed', 'Regression', 'Untested']
 
         case_teams = Cases.objects.only('id', 'custom_qa_team')
         case_teams_map = {}
@@ -234,34 +220,29 @@ class MainReport(ExcelReport):
                     getattr(run, 'name', None),
                     getattr(run, 'config', None),
                     self.milestones.get(getattr(run, 'milestone_id', None)),
-                    tests_map[run_id]['statuses'].get('Passed'),
-                    tests_map[run_id]['statuses'].get('ProdFailed'),
-                    tests_map[run_id]['statuses'].get('TestFailed'),
-                    tests_map[run_id]['statuses'].get('InfraFailed'),
-                    tests_map[run_id]['statuses'].get('Skipped'),
-                    tests_map[run_id]['statuses'].get('Other'),
-                    tests_map[run_id]['statuses'].get('Failed'),
-                    tests_map[run_id]['statuses'].get('Blocked'),
-                    tests_map[run_id]['statuses'].get('In progress'),
-                    tests_map[run_id]['statuses'].get('Fixed'),
-                    tests_map[run_id]['statuses'].get('Regression'),
-                    tests_map[run_id]['statuses'].get('Untested'),
+                    tests_map[run_id]['statuses'].get('Passed', 0),
+                    tests_map[run_id]['statuses'].get('ProdFailed', 0),
+                    tests_map[run_id]['statuses'].get('TestFailed', 0),
+                    tests_map[run_id]['statuses'].get('InfraFailed', 0),
+                    tests_map[run_id]['statuses'].get('Skipped', 0),
+                    tests_map[run_id]['statuses'].get('Other', 0),
+                    tests_map[run_id]['statuses'].get('Failed', 0),
+                    tests_map[run_id]['statuses'].get('Blocked', 0),
+                    tests_map[run_id]['statuses'].get('In progress', 0),
+                    tests_map[run_id]['statuses'].get('Fixed', 0),
+                    tests_map[run_id]['statuses'].get('Regression', 0),
+                    tests_map[run_id]['statuses'].get('Untested', 0),
                 ]),
 
-        for col, field in enumerate(column_names):
-            width = self.calc_column_width(field)
-            worksheet.set_column(col, col, width=width)
-            worksheet.write(0, col, field, style_bold)
-        worksheet.freeze_panes(1, 0)
+        self._build_worksheet(workbook,
+                              'Test Runs Report',
+                              field_names,
+                              data)
 
-        for row, record in enumerate(data, start=1):
-            for col, field in enumerate(record):
-                value = field
-                if isinstance(value, datetime):
-                    value = value.isoformat()
-                elif isinstance(value, list):
-                    value = json.dumps(value)
+    def _build_test_automation_sheet(self, workbook):
+        pass
 
-                width = self.calc_column_width(value)
-                worksheet.set_column(col, col, width=width)
-                worksheet.write(row, col, value)
+    def build_workbook(self, workbook):
+        self._build_data_sheets(workbook)
+        self._build_test_runs_sheet(workbook)
+        self._build_test_automation_sheet(workbook)

@@ -6,14 +6,11 @@ from testrail_reporting.testrail.models import (
     Users, Projects, Milestones, Plans, Suites, Runs, Sections, Cases, Tests,
     Results, CaseTypes, Statuses, Priorities, Configs, Syncs)
 
-from testrail_reporting.testrail.reports import MainReport
-from testrail_reporting.utils import get_dt_iso
 from testrail_reporting.utils import get_now
 
 
-# TODO(rsalin): threading (producer-consumer)
+# TODO(rsalin): threading or async (too slow!)
 # TODO(rsalin): retrieve only new data and clean non-existent
-# TODO(rsalin): getting Case Fields and Result Fields
 class Sync(Command):
     def __init__(self):
         super(Sync, self).__init__()
@@ -31,13 +28,6 @@ class Sync(Command):
         current_users_id = collection.objects.scalar('id')
         id_to_detele = list(set(current_users_id) - set(u['id'] for u in data))
         collection.objects.filter(id__in=id_to_detele).delete()
-
-    def generate_report(self):
-        app.logger.info('Generating report...')
-        filename = 'testrail-report-{0}.xlsx'.format(get_dt_iso())
-        report = MainReport(filename)
-        report.generate()
-        app.logger.info('Report has been generated!')
 
     def run(self):
         app.logger.info('Run TestRail sync...')
@@ -146,5 +136,3 @@ class Sync(Command):
 
         Syncs.objects.order_by('-id').first().update(finished=get_now())
         app.logger.info('TestRail sync has been finished!')
-
-        self.generate_report()

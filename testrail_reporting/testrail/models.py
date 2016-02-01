@@ -25,7 +25,8 @@ class TestRailDocument(DynamicDocument):
     def clean(self):
         for field_name, field_type in self._fields.items():
             field_value = getattr(self, field_name)
-            if isinstance(field_type, ReferenceField):
+            if isinstance(field_type, ReferenceField) and \
+                    isinstance(field_name, (int, str)):
                 collection = field_type.document_type_obj.__name__
                 ref = DBRef(collection, field_value)
                 setattr(self, field_name, ref)
@@ -220,7 +221,6 @@ class Cases(TestRailDocument):
         'case_type',
         'updated_by',
         'updated_on',
-        # Custom fields
         'custom_case_complexity',
         'custom_qa_team',
         'custom_report_label',
@@ -229,7 +229,13 @@ class Cases(TestRailDocument):
         'custom_test_group',
     ]
 
-    teams = {
+    case_complexities = {
+        '1': 'Smoke',
+        '2': 'Core',
+        '3': 'Advanced',
+    }
+
+    qa_teams = {
         '1': 'Framework-CI',
         '2': 'Fuel',
         '3': 'Maintenance',
@@ -249,12 +255,26 @@ class Cases(TestRailDocument):
     created_on = DateTimeField()
     updated_on = DateTimeField()
 
+    # Custom fields
+    custom_case_complexity = StringField(null=True)
+    custom_qa_team = StringField(null=True)
+    custom_report_label = StringField(null=True)
+    custom_test_case_description = StringField(null=True)
+    custom_test_case_steps = StringField(null=True)
+    custom_test_group = StringField(null=True)
+
     def clean(self):
         super(Cases, self).clean()
         if self.created_on:
             self.created_on = timestamp_to_dt(self.created_on)
         if self.updated_on:
             self.updated_on = timestamp_to_dt(self.updated_on)
+
+        if self.custom_case_complexity:
+            self.custom_case_complexity = self.case_complexities[
+                str(self.custom_case_complexity)]
+        if self.custom_qa_team:
+            self.custom_qa_team = self.qa_teams[str(self.custom_qa_team)]
 
 
 class Runs(TestRailDocument):

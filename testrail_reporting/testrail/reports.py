@@ -19,6 +19,7 @@ log = logging.getLogger(__name__)
 class ExcelReport(object):
     def __init__(self, filename):
         self.filename = filename
+        self.workbook = None
 
     def _calc_column_width(self, val):
         length = 8
@@ -29,9 +30,9 @@ class ExcelReport(object):
             length += len(val.encode('ascii', 'ignore'))
         return length if length < max_length else max_length
 
-    def _build_worksheet(self, workbook, title, field_names, data):
-        style_bold = workbook.add_format({'bold': True})
-        worksheet = workbook.add_worksheet(title)
+    def _build_worksheet(self, title, field_names, data):
+        style_bold = self.workbook.add_format({'bold': True})
+        worksheet = self.workbook.add_worksheet(title)
         for col, field in enumerate(field_names):
             width = self._calc_column_width(field)
             worksheet.set_column(col, col, width=width)
@@ -45,19 +46,20 @@ class ExcelReport(object):
                     value = value.isoformat()
                 elif isinstance(value, list):
                     value = json.dumps(value)
+
                 width = self._calc_column_width(value)
                 worksheet.set_column(col, col, width=width)
                 worksheet.write(row, col, value)
 
-    def build_workbook(self, workbook):
+    def build_workbook(self):
         raise NotImplementedError()
 
     def generate(self):
         log.info('Generating report...')
         filename = os.path.join(app.config['REPORTS_PATH'], self.filename)
-        workbook = xlsxwriter.Workbook(filename)
-        self.build_workbook(workbook)
-        workbook.close()
+        self.workbook = xlsxwriter.Workbook(filename)
+        self.build_workbook()
+        self.workbook.close()
 
         report = Reports(filename=self.filename)
         report.save()
@@ -119,7 +121,7 @@ class MainReport(ExcelReport):
                 additional_fields.update({k: self.users.get(v)})
         return additional_fields
 
-    def _build_data_sheets(self, workbook):
+    def _build_data_sheets(self):
         collections = [Users, CaseTypes, Statuses, Priorities, Projects,
                        Milestones, Plans, Configs, Suites, Cases, Sections,
                        Runs, Tests, Results]
@@ -142,12 +144,9 @@ class MainReport(ExcelReport):
                     row_data.append(value)
                 data.append(row_data)
 
-            self._build_worksheet(workbook,
-                                  collection.__name__,
-                                  field_names,
-                                  data)
+            self._build_worksheet(collection.__name__, field_names, data)
 
-    def _build_test_runs_sheet(self, workbook):
+    def _build_test_runs_sheet(self):
         field_names = ['QA team', 'Run ID', 'Run', 'Run Configuration',
                        'Milestone', 'Passed', 'ProdFailed', 'TestFailed',
                        'InfraFailed', 'Skipped', 'Other', 'Failed', 'Blocked',
@@ -198,8 +197,7 @@ class MainReport(ExcelReport):
 
             team = None
             try:
-                team = Cases.teams[str(
-                    Counter(teams).most_common(1)[0][0])]
+                team = Counter(teams).most_common(1)[0][0]
             except IndexError:
                 pass
             tests_map[test['_id']] = {
@@ -234,15 +232,17 @@ class MainReport(ExcelReport):
                     tests_map[run_id]['statuses'].get('Untested', 0),
                 ]),
 
-        self._build_worksheet(workbook,
-                              'Test Runs Report',
-                              field_names,
-                              data)
+        self._build_worksheet('Test Runs Report', field_names, data)
 
-    def _build_test_automation_sheet(self, workbook):
-        pass
+    def _build_tc_automation_sheet(self):
+        field_names = ['QA team', 'Milestone', 'Automated',
+                       'Automation in Progress', 'Manual', 'Smoke', 'Core',
+                       'Advanced']
+        data = []
 
-    def build_workbook(self, workbook):
-        self._build_data_sheets(workbook)
-        self._build_test_runs_sheet(workbook)
-        self._build_test_automation_sheet(workbook)
+        self._build_worksheet('TC Automation Report', field_names, data)
+
+    def build_workbook(self):
+        self._build_data_sheets()
+        self._build_test_runs_sheet()
+        self._build_tc_automation_sheet()

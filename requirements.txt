@@ -13,6 +13,7 @@ Flask-Login
 Flask-Principal
 Flask-Mail
 Flask-WTF
+aiohttp
 iso8601
 pytz
 requests

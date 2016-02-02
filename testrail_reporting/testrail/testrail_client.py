@@ -32,7 +32,7 @@ class TestRailClient(object):
         """
         return await self.__send_request('get', uri, data=None)
 
-    async def send_post(self, uri, data):
+    def send_post(self, uri, data):
         """Send POST.
 
         Issues a POST request (write) against the API and returns the result
@@ -43,7 +43,7 @@ class TestRailClient(object):
         :param data: The data to submit as part of the request (as Python
             dict, strings must be UTF-8 encoded)
         """
-        return await self.__send_request('post', uri, data=data)
+        return self.__send_request('post', uri, data=data)
 
     async def __send_request(self, method, uri, data):
         url = self.__url + uri
@@ -54,22 +54,22 @@ class TestRailClient(object):
                                          data=data, auth=auth,
                                          headers=headers)
 
-        if response.status_code == 429:  # Too Many Requests
+        if response.status == 429:  # Too Many Requests
             delay = int(response.headers.get('Retry-After')) \
                 or self.default_delay
             log.warning('Too Many Requests. Request will be retried after {0} '
                         'seconds'.format(str(delay)))
             time.sleep(delay)
-            self.__send_request(method, uri, **kwargs)
+            self.__send_request(method, uri, data)
 
-        if response.status_code >= 300:
+        if response.status >= 300:
             raise APIError(
                 "Wrong response from TestRail API:\n"
                 "status_code: {0.status_code}\n"
                 "headers: {0.headers}\n"
                 "content: '{0.content}'".format(response))
 
-        result = response.json()
+        result = await response.json()
         if result and 'error' in result:
             log.warning(result)
         return result

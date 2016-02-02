@@ -260,7 +260,7 @@ class Cases(TestRailDocument):
     custom_qa_team = StringField(null=True)
     custom_report_label = StringField(null=True)
     custom_test_case_description = StringField(null=True)
-    custom_test_case_steps = StringField(null=True)
+    custom_test_case_steps = ListField(null=True)
     custom_test_group = StringField(null=True)
 
     def clean(self):

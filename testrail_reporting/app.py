@@ -16,9 +16,6 @@ from testrail_reporting.pages.views import pages
 from testrail_reporting.testrail.views import testrail
 
 
-log = logging.getLogger(__name__)
-
-
 def configure_app(app, config_name):
     app.config.from_object(config.config[config_name])
     config_filename = 'testrail_reporting.conf'
@@ -42,8 +39,13 @@ def configure_logging(app):
     handler.setFormatter(formatter)
     app.logger.addHandler(handler)
 
+    # beause app.logger doesn't work when command (except Server) is running
+    logging.getLogger().setLevel(app.config['LOGGING_LEVEL'])
+    logging.getLogger().addHandler(handler)
+
     logging.getLogger('requests').setLevel(logging.ERROR)
     logging.getLogger('iso8601').setLevel(logging.ERROR)
+    logging.getLogger('passlib').setLevel(logging.ERROR)
 
 
 def configure_hook(app):

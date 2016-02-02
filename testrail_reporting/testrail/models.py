@@ -25,7 +25,8 @@ class TestRailDocument(DynamicDocument):
     def clean(self):
         for field_name, field_type in self._fields.items():
             field_value = getattr(self, field_name)
-            if isinstance(field_type, ReferenceField):
+            if isinstance(field_type, ReferenceField) and \
+                    isinstance(field_name, (int, str)):
                 collection = field_type.document_type_obj.__name__
                 ref = DBRef(collection, field_value)
                 setattr(self, field_name, ref)
@@ -33,7 +34,7 @@ class TestRailDocument(DynamicDocument):
 
 class Users(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'email',
         'is_active',
         'name',
@@ -42,7 +43,7 @@ class Users(TestRailDocument):
 
 class CaseTypes(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'is_default',
         'name',
     ]
@@ -50,7 +51,7 @@ class CaseTypes(TestRailDocument):
 
 class Priorities(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'is_default',
         'name',
         'priority',
@@ -60,7 +61,7 @@ class Priorities(TestRailDocument):
 
 class Statuses(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'is_final',
         'is_system',
         'is_untested',
@@ -71,7 +72,7 @@ class Statuses(TestRailDocument):
 
 class Projects(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'announcement',
         'completed_on',
         'is_completed',
@@ -91,7 +92,7 @@ class Projects(TestRailDocument):
 
 class Milestones(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'completed_on',
         'description',
         'due_on',
@@ -115,7 +116,7 @@ class Milestones(TestRailDocument):
 
 class Plans(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'assignedto',
         'blocked_count',
         'completed_on',
@@ -157,7 +158,7 @@ class Plans(TestRailDocument):
 
 class Configs(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'configs',
         'name',
         'project',
@@ -168,7 +169,7 @@ class Configs(TestRailDocument):
 
 class Suites(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'completed_on',
         'description',
         'is_baseline',
@@ -190,7 +191,7 @@ class Suites(TestRailDocument):
 
 class Sections(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'depth',
         'description',
         'display_order',
@@ -205,7 +206,7 @@ class Sections(TestRailDocument):
 
 class Cases(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'created_by',
         'created_on',
         'estimate',
@@ -214,15 +215,12 @@ class Cases(TestRailDocument):
         'priority',
         'refs',
         'section_id',
-        'section',
         'suite_id',
         'suite',
         'title',
         'case_type',
         'updated_by',
         'updated_on',
-        # Custom fields
-        # TODO(rsalin): get this from get_case_fields
         'custom_case_complexity',
         'custom_qa_team',
         'custom_report_label',
@@ -231,8 +229,13 @@ class Cases(TestRailDocument):
         'custom_test_group',
     ]
 
-    # TODO(rsalin): get this from get_case_fields
-    teams = {
+    case_complexities = {
+        '1': 'Smoke',
+        '2': 'Core',
+        '3': 'Advanced',
+    }
+
+    qa_teams = {
         '1': 'Framework-CI',
         '2': 'Fuel',
         '3': 'Maintenance',
@@ -252,6 +255,14 @@ class Cases(TestRailDocument):
     created_on = DateTimeField()
     updated_on = DateTimeField()
 
+    # Custom fields
+    custom_case_complexity = StringField(null=True)
+    custom_qa_team = StringField(null=True)
+    custom_report_label = StringField(null=True)
+    custom_test_case_description = StringField(null=True)
+    custom_test_case_steps = ListField(null=True)
+    custom_test_group = StringField(null=True)
+
     def clean(self):
         super(Cases, self).clean()
         if self.created_on:
@@ -259,10 +270,16 @@ class Cases(TestRailDocument):
         if self.updated_on:
             self.updated_on = timestamp_to_dt(self.updated_on)
 
+        if self.custom_case_complexity:
+            self.custom_case_complexity = self.case_complexities[
+                str(self.custom_case_complexity)]
+        if self.custom_qa_team:
+            self.custom_qa_team = self.qa_teams[str(self.custom_qa_team)]
+
 
 class Runs(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'assignedto',
         'blocked_count',
         'completed_on',
@@ -283,7 +300,6 @@ class Runs(TestRailDocument):
         'is_completed',
         'milestone',
         'plan_id',
-        'plan',
         'name',
         'passed_count',
         'project',
@@ -315,17 +331,15 @@ class Runs(TestRailDocument):
 
 class Tests(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'assignedto_id',
         'case_id',
-        'case',
         'estimate',
         'estimate_forecast',
         'milestone',
         'priority',
         'refs',
         'run_id',
-        'run',
         'status',
         'title',
         'case_type',
@@ -341,7 +355,7 @@ class Tests(TestRailDocument):
 
 class Results(TestRailDocument):
     report_fields = [
-        'id',
+        '_id',
         'assignedto',
         'comment',
         'created_by',
@@ -350,7 +364,6 @@ class Results(TestRailDocument):
         'elapsed',
         'status',
         'test_id',
-        'test',
         'version',
     ]
 

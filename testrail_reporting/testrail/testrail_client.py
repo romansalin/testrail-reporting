@@ -65,7 +65,7 @@ class TestRailClient(object):
         if response.status >= 300:
             raise APIError(
                 "Wrong response from TestRail API:\n"
-                "status_code: {0.status_code}\n"
+                "status_code: {0.status}\n"
                 "headers: {0.headers}\n"
                 "content: '{0.content}'".format(response))
 

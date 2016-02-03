@@ -1,3 +1,4 @@
+import requests
 import threading
 
 from flask import current_app
@@ -41,3 +42,25 @@ def get_google():
             if _GOOGLE is None:
                 _GOOGLE = _create_remote_app()
     return _GOOGLE
+
+
+def get_client_json(google_token):
+    headers = {'Authorization': 'OAuth ' + google_token}
+    response = requests.get('https://www.googleapis.com/oauth2/v1/userinfo',
+                            headers=headers)
+    response_json = response.json()
+
+    domain = response_json.get('hd', None)
+    if domain != current_app.config['GOOGLE_APP_DOMAIN']:
+        # This user is not part of this organization's domain.
+        return None
+
+    return {
+        'user_name': response_json['name'],
+        'user_email': response_json['email'],
+    }
+
+
+# @google.tokengetter
+# def get_access_token():
+#     return session.get('google_token')

@@ -1,4 +1,5 @@
 # Google OAuth Credentials
+GOOGLE_APP_DOMAIN = 'mirantis.com'
 GOOGLE_KEY = ''
 GOOGLE_SECRET = ''
 

@@ -15,16 +15,15 @@ def auth_required(f):
     def decorated(*args, **kwargs):
         google_token = session.get('google_token')
         if not google_token:
-            log.debug("Unauthorized access. Throwing 401.")
+            log.debug("Unauthorized access.")
             return redirect(url_for('pages.login'))
-        else:
-            try:
-                AuthUser.objects.get(google_token=google_token[0])
-            except AuthUser.DoesNotExist:
-                log.warning("User with google_token {0} "
-                            "wasn't found in DB".format(google_token[0]))
-                return redirect(url_for('pages.login'))
+
+        try:
+            AuthUser.objects.get(google_token=google_token[0])
+        except AuthUser.DoesNotExist:
+            log.warning("User with google_token {0} "
+                        "wasn't found in DB".format(google_token[0]))
+            return redirect(url_for('pages.login'))
 
         return f(*args, **kwargs)
-
     return decorated

@@ -8,9 +8,9 @@ Requirements
 
 You will need the following things properly installed on your machine:
 
-* Python 3.5
-* MongoDB
-* Node.js (with NPM)
+* Python 3.5+
+* MongoDB 3+
+* Node.js 5+ (with NPM)
 
 Installation
 ------------
@@ -22,16 +22,16 @@ Development Environment
 
 .. code-block:: shell
 
-    $ sudo apt-get install build-essential python-dev python-pip mongodb
-    $ sudo pip install virtualenv
+    $ sudo apt-get install build-essential python3.5-dev python3-pip mongodb nodejs
+    $ sudo pip3 install virtualenv
 
 2. Install Python requirements:
 
 .. code-block:: shell
 
     $ cd testrail-reporting
-    $ virtualenv env
-    $ source env/bin/activate
+    $ virtualenv .venv
+    $ source .venv/bin/activate
     $ pip install -r requirements.txt
 
 3. Install JavaScript requirements and build static:
@@ -67,6 +67,8 @@ Development Environment
 
 Production Environment
 ~~~~~~~~~~~~~~~~~~~~~~
+
+TODO
 
 Hacking
 -------

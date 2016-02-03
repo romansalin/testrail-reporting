@@ -11,6 +11,7 @@ var config = {
   },
   output: {
     path: path.resolve(__dirname, 'testrail_reporting/static/build'),
+    publicPath: '/assets/',
     filename: 'bundle.js'
   },
   resolve: {

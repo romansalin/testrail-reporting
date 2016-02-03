@@ -1,21 +1,20 @@
 server {
-    listen 5000;
-    server_name _;
-    root /home/user/testrail-reporting/testrail_reporting/static;
+    listen 80;
+    server_name testrail-reporting.dev.mirantis.net;
 
     client_max_body_size 1G;
     keepalive_timeout 5;
 
-    access_log  /var/log/nginx/testrail-reporting-access.log;
-    error_log   /var/log/nginx/testrail-reporting-error.log;
+    error_log /var/log/testrail_reporting/nginx.error.log;
+    access_log /var/log/testrail_reporting/nginx.access.log;
 
     location /static {
-        alias /home/user/testrail-reporting/testrail_reporting/static;
+        alias /var/www/testrail-reporting/testrail_reporting/static;
     }
 
     location / {
         include uwsgi_params;
-        uwsgi_pass unix:/run/testrail_reporting/testrail_reporting.sock;
+        uwsgi_pass unix:/run/uwsgi/testrail_reporting/socket.sock;
         uwsgi_read_timeout 300;
         uwsgi_send_timeout 300;
     }

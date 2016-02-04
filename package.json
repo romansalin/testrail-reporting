@@ -7,6 +7,7 @@
   "scripts": {
     "build": "NODE_ENV=production webpack --progress --colors",
     "watch": "webpack --progress --colors --devtool sourcemap --watch",
+    "devserver": "webpack-dev-server --progress --colors --inline",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint --ext js,jsx testrail_reporting/static/js",
     "postinstall": "npm run build"

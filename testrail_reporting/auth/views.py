@@ -9,9 +9,7 @@ from flask import session
 from flask import url_for
 
 from testrail_reporting.auth.models import AuthUser
-from testrail_reporting.auth.oauth import get_client_json
 from testrail_reporting.auth.oauth import get_google
-from testrail_reporting.utils import LazyWrapper
 
 log = logging.getLogger(__name__)
 auth = Blueprint('auth', __name__)

@@ -81,11 +81,15 @@ def configure_blueprints(app):
     app.register_blueprint(api_bp, url_prefix='/api/v1.0')
 
 
-def configure_template_filters(app):
+def configure_templates(app):
 
     @app.template_filter()
     def format_date(value, format='%Y-%m-%d'):
         return value.strftime(format)
+
+    @app.context_processor
+    def is_dev():
+        return dict(is_dev=app.config['DEBUG'])
 
 
 def configure_error_handlers(app):
@@ -110,7 +114,7 @@ def create_app(config_name='development'):
     configure_hook(app)
     configure_extensions(app)
     configure_blueprints(app)
-    configure_template_filters(app)
+    configure_templates(app)
     configure_error_handlers(app)
     configure_api_endpoints()
     return app

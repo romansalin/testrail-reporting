@@ -23,6 +23,10 @@
     {% block footer %}{% endblock %}
 </div>
 
-<script src="http://localhost:8080/assets/bundle.js"></script>
+{% if is_dev %}
+    <script src="http://localhost:8080/assets/bundle.js"></script>
+{% else %}
+    <script src="{{ url_for('static', filename='build/bundle.js') }}"></script>
+{% endif %}
 </body>
 </html>

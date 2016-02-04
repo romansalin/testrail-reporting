@@ -24,7 +24,7 @@
 </div>
 
 {% if is_dev %}
-    <script src="http://localhost:8080/assets/bundle.js"></script>
+    <script src="http://localhost:8080{{ url_for('static', filename='build/bundle.js') }}"></script>
 {% else %}
     <script src="{{ url_for('static', filename='build/bundle.js') }}"></script>
 {% endif %}

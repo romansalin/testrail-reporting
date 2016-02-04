@@ -4,14 +4,14 @@ var production = process.env.NODE_ENV === 'production';
 
 var config = {
   // for faster builds use 'eval'
-  devtool: 'source-map',
+  devtool: 'eval-source-map',
   debug: true,
   entry: {
     main: path.resolve(__dirname, 'testrail_reporting/static/js/app.jsx')
   },
   output: {
     path: path.resolve(__dirname, 'testrail_reporting/static/build'),
-    publicPath: '/assets/',
+    publicPath: '/build/',
     filename: 'bundle.js'
   },
   resolve: {
@@ -51,6 +51,18 @@ if (production) {
       minimize: true
     })
   );
+} else {
+  // webpack-dev-server config
+  config.devServer = {
+    // enable iframe mode (open http://localhost:8080/webpack-dev-server/)
+    contentBase: 'http://127.0.0.1:5000/',
+
+    // embed the webpack-dev-server runtime into the bundle
+    inline: false,
+
+    // suppress boring information
+    noInfo: true
+  };
 }
 
 module.exports = config;

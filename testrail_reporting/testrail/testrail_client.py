@@ -61,8 +61,7 @@ class TestRailClient(object):
                         'seconds'.format(str(delay)))
             time.sleep(delay)
             self.__send_request(method, uri, data)
-
-        if response.status >= 300:
+        elif response.status >= 300:
             raise APIError(
                 "Wrong response from TestRail API:\n"
                 "status_code: {0.status}\n"

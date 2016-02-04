@@ -4,6 +4,6 @@ GOOGLE_KEY = ''
 GOOGLE_SECRET = ''
 
 # TestRail Credentials
-TESTRAIL_BASEURL = ''
+TESTRAIL_BASEURL = 'https://mirantis.testrail.com/'
 TESTRAIL_USER = ''
 TESTRAIL_PASSWORD = ''

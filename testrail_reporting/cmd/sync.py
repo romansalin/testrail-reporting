@@ -100,9 +100,12 @@ class Sync(Command):
                 self.get_cases(project, suite),
             ])
 
-    # TODO(rsalin): optimization
+    def save_run(self, run):
+        log.info('Sync Run "{0}"'.format(run.get('name')))
+        new_runs = Runs(**run)
+        new_runs.save()
+
     async def get_plans(self, project):
-        plan_runs = []
         plans = await self.get_data('plans/{0}'.format(project['id']))
         for plan in plans:
             log.info('Sync Plan "{0}"'.format(plan.get('name')))
@@ -119,8 +122,12 @@ class Sync(Command):
                         'config': entry.get('name'),
                         'suite_id': entry.get('suite_id'),
                     })
-                    plan_runs.append(run)
-        return plan_runs
+                    self.save_run(run)
+
+                    await asyncio.wait([
+                        self.get_tests(run),
+                        self.get_results(run),
+                    ])
 
     async def get_tests(self, run):
         tests = await self.get_data('tests/{0}'.format(run['id']))
@@ -135,13 +142,10 @@ class Sync(Command):
             new_result = Results(**result)
             new_result.save()
 
-    async def get_runs(self, project, plan_runs):
+    async def get_runs(self, project):
         runs = await self.get_data('runs/{0}'.format(project['id']))
-        all_runs = plan_runs + runs
-        for run in all_runs:
-            log.info('Sync Run "{0}"'.format(run.get('name')))
-            new_runs = Runs(**run)
-            new_runs.save()
+        for run in runs:
+            self.save_run(run)
 
             await asyncio.wait([
                 self.get_tests(run),
@@ -160,9 +164,9 @@ class Sync(Command):
                 self.get_milestones(project),
                 self.get_configs(project),
                 self.get_suites(project),
+                self.get_plans(project),
+                self.get_runs(project),
             ])
-            plan_runs = await self.get_plans(project)
-            await self.get_runs(project, plan_runs)
 
     async def get_collections(self):
         await asyncio.wait([

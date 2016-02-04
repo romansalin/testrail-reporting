@@ -7,16 +7,15 @@ processes = 4
 threads = 2
 
 vhost = true
-venv = /home/user/testrail-reporting/.venv
-chdir = /home/user/testrail-reporting
+venv = /var/www/testrail-reporting/.venv
+chdir = /var/www/testrail-reporting
 
-uid = roman.salin
-socket = /run/testrail_reporting/testrail_reporting.sock
-chown-socket = roman.salin:nginx
+uid = testrail-reporting
+socket = /run/uwsgi/testrail_reporting/socket.sock
+chown-socket = testrail-reporting:nginx
 chmod-socket = 660
 vacuum = true
 
-harakiri = 300
 socket-timeout = 300
 die-on-term = true
 

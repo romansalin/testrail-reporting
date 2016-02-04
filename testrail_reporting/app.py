@@ -7,17 +7,12 @@ from flask.ext.security import MongoEngineUserDatastore
 from flask import Flask
 from flask import render_template
 
-from testrail_reporting.api import api_bp
-from testrail_reporting.auth import models as auth_models
-from testrail_reporting.auth.views import auth
-from testrail_reporting import config
+from testrail_reporting.config import config
 from testrail_reporting import extensions as ext
-from testrail_reporting.pages.views import pages
-from testrail_reporting.testrail.views import testrail
 
 
 def configure_app(app, config_name):
-    app.config.from_object(config.config[config_name])
+    app.config.from_object(config[config_name])
     config_filename = 'testrail_reporting.conf'
     app.config.from_pyfile('/etc/testrail_reporting/' + config_filename,
                            silent=True)
@@ -62,7 +57,9 @@ def configure_extensions(app):
     ext.api.init_app(app)
 
     # Setup Flask-Security
-    user_datastore = MongoEngineUserDatastore(ext.db, auth_models.AuthUser,
+    from testrail_reporting.auth import models as auth_models
+    user_datastore = MongoEngineUserDatastore(ext.db,
+                                              auth_models.AuthUser,
                                               auth_models.AuthRole)
     ext.security.init_app(app, user_datastore)
 
@@ -71,17 +68,28 @@ def configure_extensions(app):
 
 
 def configure_blueprints(app):
+    from testrail_reporting.pages.views import pages
     app.register_blueprint(pages, url_prefix='/')
+
+    from testrail_reporting.auth.views import auth
     app.register_blueprint(auth, url_prefix='/auth')
+
+    from testrail_reporting.testrail.views import testrail
     app.register_blueprint(testrail, url_prefix='/testrail')
+
+    from testrail_reporting.api import api_bp
     app.register_blueprint(api_bp, url_prefix='/api/v1.0')
 
 
-def configure_template_filters(app):
+def configure_templates(app):
 
     @app.template_filter()
     def format_date(value, format='%Y-%m-%d'):
         return value.strftime(format)
+
+    @app.context_processor
+    def is_dev():
+        return dict(is_dev=app.config['DEBUG'])
 
 
 def configure_error_handlers(app):
@@ -106,7 +114,7 @@ def create_app(config_name='development'):
     configure_hook(app)
     configure_extensions(app)
     configure_blueprints(app)
-    configure_template_filters(app)
+    configure_templates(app)
     configure_error_handlers(app)
     configure_api_endpoints()
     return app

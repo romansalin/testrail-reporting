@@ -12,6 +12,9 @@
                 <a href="{{ url_for('auth.login') }}" id="signinButton" type="submit"></a>
             </div>
         </form>
+        {% for message in get_flashed_messages() %}
+            <p class=message>{{ message }}
+        {% endfor %}
         <p class="m-t">
             <small>Use your @mirantis account to sign in</small>
         </p>

@@ -62,7 +62,7 @@ class TestRailClient(object):
             time.sleep(delay)
             self.__send_request(method, uri, data)
         elif response.status >= 300:
-            raise APIError(
+            raise TestRailAPIError(
                 "Wrong response from TestRail API:\n"
                 "status_code: {0.status}\n"
                 "headers: {0.headers}\n"
@@ -74,5 +74,5 @@ class TestRailClient(object):
         return result
 
 
-class APIError(Exception):
+class TestRailAPIError(Exception):
     pass

@@ -7,8 +7,13 @@ from flask.ext.security import MongoEngineUserDatastore
 from flask import Flask
 from flask import render_template
 
+from testrail_reporting.auth import models as auth_models
+from testrail_reporting.auth.views import auth
 from testrail_reporting.config import config
 from testrail_reporting import extensions as ext
+from testrail_reporting.pages.views import pages
+from testrail_reporting.resources import api_bp
+from testrail_reporting.testrail.views import testrail
 
 
 def configure_app(app, config_name):
@@ -54,10 +59,8 @@ def configure_extensions(app):
     ext.db.init_app(app)
     ext.cache.init_app(app, config=app.config['CACHING'])
     ext.oauth.init_app(app)
-    ext.api.init_app(app)
 
     # Setup Flask-Security
-    from testrail_reporting.auth import models as auth_models
     user_datastore = MongoEngineUserDatastore(ext.db,
                                               auth_models.AuthUser,
                                               auth_models.AuthRole)
@@ -68,16 +71,9 @@ def configure_extensions(app):
 
 
 def configure_blueprints(app):
-    from testrail_reporting.pages.views import pages
     app.register_blueprint(pages, url_prefix='/')
-
-    from testrail_reporting.auth.views import auth
     app.register_blueprint(auth, url_prefix='/auth')
-
-    from testrail_reporting.testrail.views import testrail
     app.register_blueprint(testrail, url_prefix='/testrail')
-
-    from testrail_reporting.api import api_bp
     app.register_blueprint(api_bp, url_prefix='/api/v1.0')
 
 
@@ -102,10 +98,6 @@ def configure_error_handlers(app):
     register_error_handler(500, 'errors/500.html')
 
 
-def configure_api_endpoints():
-    pass
-
-
 def create_app(config_name='development'):
     app = Flask(__name__, static_url_path='')
 
@@ -116,5 +108,4 @@ def create_app(config_name='development'):
     configure_blueprints(app)
     configure_templates(app)
     configure_error_handlers(app)
-    configure_api_endpoints()
     return app
